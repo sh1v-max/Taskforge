@@ -39,9 +39,10 @@ userSchema.pre('save', async function () {
 })
 
 // now we will compare the password with the hashed password in the database when the user tries to login
-userSchema.methods.matchPassword = async function (enteredPassword) {
+userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password)
 }
+
 // this compare with hashed password
 // bcrypt handles hashing logic internally
 
