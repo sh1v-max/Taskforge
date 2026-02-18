@@ -1,6 +1,7 @@
 import express from 'express'
 // import User from './models/User.js'
-import authRouter from "./routes/auth.router.js"
+import authRouter from './routes/auth.router.js'
+import { protect } from './middleware/auth.middleware.js'
 
 const app = express()
 
@@ -9,6 +10,13 @@ app.use('/api/auth', authRouter)
 
 app.get('/', (req, res) => {
   res.send('TaskForge API is running')
+})
+
+app.get('/api/protected', protect, (req, res) => {
+  res.json({
+    message: 'Protected route accessed',
+    user: req.user,
+  })
 })
 
 // testing user creation
