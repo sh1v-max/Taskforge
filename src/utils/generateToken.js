@@ -24,3 +24,26 @@ export default generateToken
 //   iat: 1747163157,
 //   exp: 1749755157
 // }
+
+// authentication flow
+// User logs in
+//       ↓
+// Password verified
+//       ↓
+// generateToken(user._id, user.role)
+//       ↓
+// JWT returned to frontend
+//       ↓
+// Frontend stores token
+//       ↓
+// Future requests include token
+//       ↓
+// protect middleware verifies token
+//       ↓
+// User is authenticated
+
+// jwt is not encrypted, it's just encoded using base64
+// but the important information is that it is signed using a secret key
+// so it cannot be tampered with
+// if anyone tries to tamper with the token, the signature will be invalid and the token will be rejected
+// this is the basic concept of jwt 
