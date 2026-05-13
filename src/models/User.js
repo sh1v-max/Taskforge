@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
 
+// user.js file defines what a user is
 const userSchema = new mongoose.Schema(
   {
     name: {
