@@ -11,7 +11,6 @@ export const validate = (schema) => (req, res, next) => {
   next()
 }
 
-
 // what does this middleware do?
 // this takes a zod schema as an argument and returns a middleware function
 // the middleware function validates the request body against the provided schema
