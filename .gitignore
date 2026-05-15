@@ -30,3 +30,6 @@ Thumbs.db
 # Misc
 *.local
 coverage
+
+# Claude documentation
+CLAUDE.md
