@@ -2,12 +2,23 @@
 
 This document outlines a structured, 20-step curriculum to build the remainder of your TaskForge API. By following these steps sequentially, you will learn how to implement core business logic, handle advanced data querying, refactor for cleaner code, and secure a production-ready Node.js backend.
 
-## User Review Required
-
-> [!IMPORTANT]
-> Please review this 20-step plan. Once you approve it, we will execute it together step-by-step. You will learn the 'why' and 'how' behind each line of code as we write it.
 
 ## The 20-Step Roadmap
+
+---
+
+### Phase 0: API Testing Setup
+Before we start implementing features, we need tools to test our API endpoints as we build them. This ensures we catch issues early and verify each step works correctly.
+
+**Step 0: Setup API Testing Tools**
+*   **What to work on:** Install and configure an API testing client.
+*   **How to implement:** Download either Thunder Client (VS Code extension) or Postman (standalone). Create a collection for TaskForge API with organized folders for Auth, Tasks, and Utilities. Set up environment variables for `baseURL` (http://localhost:5000) and `authToken` (will be populated after login).
+*   **Why:** Manual testing with curl is tedious. A visual client lets you quickly test endpoints, save requests, and debug responses. Environment variables let you reuse the JWT token across requests without copy-pasting.
+*   **Testing Checklist:** After each phase, we'll verify:
+    - Status codes are correct (200, 201, 400, 401, 404, 500)
+    - Response bodies contain expected data
+    - Authentication blocks unauthorized requests
+    - Data relationships are maintained (tasks belong to correct users)
 
 ---
 
@@ -152,3 +163,18 @@ We will verify our progress periodically during the execution phase by testing t
 1. Data is accurately inserted and fetched from the MongoDB database.
 2. The authentication system successfully blocks unauthorized access to tasks.
 3. Pagination and filtering logic successfully manipulate the returned data.
+
+---
+
+## Phase 9: Frontend Integration & Portfolio Project (Future)
+
+After completing Steps 1-20, the next phase will be building a React/Vue frontend that consumes this REST API. This transforms TaskForge from a backend exercise into a **full-stack portfolio project** ready for your resume.
+
+**Frontend Phase Goals:**
+- Build a task management UI with login, registration, and task CRUD
+- Integrate filtering, sorting, and pagination into the UI
+- Handle authentication (store JWT, refresh tokens, logout)
+- Deploy both backend and frontend
+- Document the entire project for potential employers
+
+This will demonstrate end-to-end thinking: API design from the consumer's perspective, state management, error handling on the client side, and production deployment.
