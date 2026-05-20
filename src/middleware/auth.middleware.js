@@ -1,4 +1,10 @@
-
+// this middleware reads the JWT token from the request headers
+// verifies that the token is valid
+// decodes the user ID from the token
+// fetches the user from MongoDB
+// attaches the user object to the request (req.user)
+// calls next()
+// if token is invalid or not found, it returns a 401 error
 
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
