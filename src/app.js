@@ -1,3 +1,9 @@
+// this file creates the express application
+// configure middleware
+// mount routes
+// define endpoints
+// export the app
+
 import express from 'express'
 // import User from './models/User.js'
 import authRouter from './routes/auth.router.js'
