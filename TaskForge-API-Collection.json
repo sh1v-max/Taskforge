@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "TaskForge API",
-    "description": "Complete API collection for TaskForge backend project",
+    "name": "TaskForge API - Full Testing Collection",
+    "description": "Complete API collection for TaskForge backend project with detailed testing instructions",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -14,15 +14,21 @@
       "key": "authToken",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "taskId",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
     {
-      "name": "Auth",
-      "description": "Authentication endpoints for user registration and login",
+      "name": "Auth - Authentication Endpoints",
+      "description": "Register, login, and logout endpoints. Auth flow: Register → Get token → Set authToken variable → Use in other requests",
       "item": [
         {
-          "name": "Register",
+          "name": "1. Register - Create New User",
+          "description": "Creates a new user account and returns JWT token\n\n**Expected Response:** 201 Created\n**Response includes:** { token: \"eyJh...\", user: { _id, email, name } }\n\n**Testing Tips:**\n- Use different emails for each registration\n- Password should be strong (mix of letters, numbers, special chars)\n- Copy the `token` from response and set it as `authToken` variable",
           "request": {
             "method": "POST",
             "header": [
@@ -44,7 +50,8 @@
           "response": []
         },
         {
-          "name": "Login",
+          "name": "2. Login - Get Auth Token",
+          "description": "Logs in with email/password and returns JWT token\n\n**Expected Response:** 200 OK\n**Response includes:** { token: \"eyJh...\" }\n\n**Testing Tips:**\n- Use credentials from a previously registered user\n- Copy the token to `authToken` variable (right-click on response, set as variable)\n- Token is valid for a certain time; get a new one if it expires",
           "request": {
             "method": "POST",
             "header": [
@@ -66,7 +73,8 @@
           "response": []
         },
         {
-          "name": "Logout",
+          "name": "3. Logout - Invalidate Token",
+          "description": "Logs out user and invalidates their token\n\n**Expected Response:** 200 OK\n**Response:** { message: \"Logged out successfully\" }\n\n**Testing Tips:**\n- Requires valid `authToken` (Authorization header)\n- After logout, your token should no longer work\n- Test by trying to access protected routes after logging out (should get 401)",
           "request": {
             "method": "POST",
             "header": [
@@ -86,11 +94,12 @@
       ]
     },
     {
-      "name": "Tasks",
-      "description": "Task management endpoints (CRUD operations)",
+      "name": "Tasks - CRUD Operations",
+      "description": "Create, read, update, delete tasks. All endpoints require authentication (Authorization header with Bearer token)",
       "item": [
         {
-          "name": "Create Task",
+          "name": "1. Create Task - POST /api/tasks",
+          "description": "Creates a new task for the authenticated user\n\n**Required:** Authorization header with valid token\n**Expected Response:** 201 Created\n**Response includes:** { _id, title, description, status, dueDate, user, createdAt, updatedAt }\n\n**Validation Rules:**\n- `title` (required): String, min 1 character\n- `status` (optional): Must be 'pending' | 'in-progress' | 'completed'\n- `description` (optional): String\n- `dueDate` (optional): ISO date string (e.g., \"2026-06-15\")\n\n**Testing Tips:**\n- After creation, copy the `_id` and set as `taskId` variable\n- Try creating without title → Should get 400 error\n- Try with invalid status → Should get 400 error\n- Verify `user` field matches your logged-in user",
           "request": {
             "method": "POST",
             "header": [
@@ -116,7 +125,8 @@
           "response": []
         },
         {
-          "name": "Get All Tasks",
+          "name": "2. Get All Tasks - Basic",
+          "description": "Fetches all tasks for the authenticated user\n\n**Required:** Authorization header\n**Expected Response:** 200 OK\n**Response:** Array of task objects\n\n**Testing Tips:**\n- You should only see YOUR tasks (not other users' tasks)\n- If no tasks created yet, response is empty array []\n- Each task includes: _id, title, status, user, createdAt, etc.",
           "request": {
             "method": "GET",
             "header": [
@@ -134,7 +144,58 @@
           "response": []
         },
         {
-          "name": "Get All Tasks - With Pagination",
+          "name": "3. Get All Tasks - With FILTER (?status=)",
+          "description": "Filters tasks by status\n\n**Query Parameters:**\n- `status` (optional): 'pending' | 'in-progress' | 'completed'\n\n**Example:** `/api/tasks?status=completed` - Returns only completed tasks\n\n**Expected Response:** 200 OK with filtered tasks\n\n**Testing Tips:**\n- First, create multiple tasks with different statuses\n- Change the `status` parameter to test different filters\n- Try invalid status value → Should get 400 error (validation)\n- Response should only include tasks matching the status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/tasks?status=completed",
+              "host": ["{{baseURL}}"],
+              "path": ["api", "tasks"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "completed"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Get All Tasks - With SORTING (?sortBy=)",
+          "description": "Sorts tasks by a field in ascending or descending order\n\n**Query Parameters:**\n- `sortBy` (optional): 'field:asc' or 'field:desc' (e.g., 'dueDate:asc', 'createdAt:desc')\n\n**Example:** `/api/tasks?sortBy=dueDate:asc` - Sorts by due date (earliest first)\n\n**Expected Response:** 200 OK with sorted tasks\n\n**Testing Tips:**\n- Try `dueDate:asc` (earliest due dates first)\n- Try `createdAt:desc` (newest first)\n- Try `title:asc` (alphabetical)\n- Verify tasks are in the correct order in response",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/tasks?sortBy=dueDate:asc",
+              "host": ["{{baseURL}}"],
+              "path": ["api", "tasks"],
+              "query": [
+                {
+                  "key": "sortBy",
+                  "value": "dueDate:asc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5. Get All Tasks - With PAGINATION (?page=&limit=)",
+          "description": "Paginates tasks (returns a subset of all tasks)\n\n**Query Parameters:**\n- `page` (optional, default 1): Page number starting from 1\n- `limit` (optional, default 10): Number of tasks per page\n\n**Example:** `/api/tasks?page=1&limit=5` - Returns first 5 tasks\n\n**Expected Response:** 200 OK with:\n```json\n{\n  \"tasks\": [...],\n  \"page\": 1,\n  \"limit\": 5,\n  \"total\": 23\n}\n```\n\n**Testing Tips:**\n- Create 10+ tasks first\n- Test `?page=1&limit=5` (first 5 tasks)\n- Test `?page=2&limit=5` (tasks 6-10)\n- Test `?page=3&limit=5` (tasks 11-15)\n- Frontend uses `total` to know how many pages exist\n- Try invalid page (0 or negative) → Should get 400 error",
           "request": {
             "method": "GET",
             "header": [
@@ -162,7 +223,8 @@
           "response": []
         },
         {
-          "name": "Get All Tasks - With Filter",
+          "name": "6. Get All Tasks - COMBINED (Filter + Sort + Paginate)",
+          "description": "Advanced: Combines filtering, sorting, and pagination\n\n**Example:** `/api/tasks?status=pending&sortBy=dueDate:asc&page=1&limit=10`\n\nReturns:\n- Only PENDING tasks\n- Sorted by due date (earliest first)\n- First 10 results\n\n**Testing Tips:**\n- This is what real frontends need\n- Verify all three features work together\n- Response should be filtered, sorted, AND paginated",
           "request": {
             "method": "GET",
             "header": [
@@ -172,37 +234,25 @@
               }
             ],
             "url": {
-              "raw": "{{baseURL}}/api/tasks?status=completed",
+              "raw": "{{baseURL}}/api/tasks?status=pending&sortBy=dueDate:asc&page=1&limit=10",
               "host": ["{{baseURL}}"],
               "path": ["api", "tasks"],
               "query": [
                 {
                   "key": "status",
-                  "value": "completed"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get All Tasks - With Sorting",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{authToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseURL}}/api/tasks?sortBy=dueDate:asc",
-              "host": ["{{baseURL}}"],
-              "path": ["api", "tasks"],
-              "query": [
+                  "value": "pending"
+                },
                 {
                   "key": "sortBy",
                   "value": "dueDate:asc"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
                 }
               ]
             }
@@ -210,7 +260,8 @@
           "response": []
         },
         {
-          "name": "Get Task by ID",
+          "name": "7. Get Task by ID - GET /api/tasks/:id",
+          "description": "Fetches a single task by ID (only if you own it)\n\n**URL Parameter:**\n- `:id` - The task ID (from {{taskId}} variable)\n\n**Required:** Authorization header\n**Expected Response:** 200 OK with single task object\n\n**Security:** \n- API verifies you own this task\n- If you try to access someone else's task → 403 Forbidden\n- If ID doesn't exist → 404 Not Found\n\n**Testing Tips:**\n- First create a task and copy its _id as {{taskId}}\n- Send this request with the taskId\n- Try with an invalid ID → Should get 404\n- Response should be a single task (not an array)",
           "request": {
             "method": "GET",
             "header": [
@@ -228,7 +279,8 @@
           "response": []
         },
         {
-          "name": "Update Task",
+          "name": "8. Update Task - PUT /api/tasks/:id",
+          "description": "Updates a task (partial update - only send fields you want to change)\n\n**Required:** Authorization header + valid {{taskId}}\n**Expected Response:** 200 OK with updated task\n\n**Updatable Fields:**\n- `title` (optional)\n- `description` (optional)\n- `status` (optional)\n- `dueDate` (optional)\n\n**Testing Tips:**\n- Try updating only status: `{\"status\": \"in-progress\"}`\n- Try updating multiple fields\n- Unchanged fields remain the same\n- API verifies you own the task (403 if not)\n- API validates status enum (400 if invalid)\n- Response shows updated values",
           "request": {
             "method": "PUT",
             "header": [
@@ -254,7 +306,8 @@
           "response": []
         },
         {
-          "name": "Delete Task",
+          "name": "9. Delete Task - DELETE /api/tasks/:id",
+          "description": "Deletes a task permanently\n\n**Required:** Authorization header + valid {{taskId}}\n**Expected Response:** 200 OK or 204 No Content\n**Security:** Verifies you own the task\n\n**Testing Tips:**\n- After deletion, try to fetch it with \"Get Task by ID\"\n- Should get 404 (task no longer exists)\n- Try deleting an ID that doesn't exist → 404\n- Try deleting without token → 401 Unauthorized",
           "request": {
             "method": "DELETE",
             "header": [
@@ -274,11 +327,153 @@
       ]
     },
     {
-      "name": "Utilities",
-      "description": "Health check and basic endpoints",
+      "name": "Error Testing - Test Auth & Validation",
+      "description": "Test error cases to ensure the API responds correctly to bad requests",
+      "item": [
+        {
+          "name": "Test: No Authorization Token",
+          "description": "What happens when you try to access a protected endpoint WITHOUT a token?\n\n**Expected Response:** 401 Unauthorized\n\nThis tests that the `protect` middleware is working.",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/tasks",
+              "host": ["{{baseURL}}"],
+              "path": ["api", "tasks"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test: Invalid Authorization Token",
+          "description": "What happens when you send an INVALID token?\n\n**Expected Response:** 401 Unauthorized\n\nChange the `authToken` to something like 'invalid-token-xyz'",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid-token-xyz"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/tasks",
+              "host": ["{{baseURL}}"],
+              "path": ["api", "tasks"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test: Missing Required Field (title)",
+          "description": "What happens when you try to create a task WITHOUT a title?\n\n**Expected Response:** 400 Bad Request\n**Response includes:** Error message about validation\n\nThis tests that Zod validation is working.",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"No title provided\",\n  \"status\": \"pending\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/tasks",
+              "host": ["{{baseURL}}"],
+              "path": ["api", "tasks"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test: Invalid Status Enum",
+          "description": "What happens when you send an INVALID status?\n\n**Expected Response:** 400 Bad Request\n\nStatus must be one of: 'pending' | 'in-progress' | 'completed'",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test task\",\n  \"status\": \"invalid-status\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/tasks",
+              "host": ["{{baseURL}}"],
+              "path": ["api", "tasks"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test: Invalid Task ID (404)",
+          "description": "What happens when you try to fetch a task with a non-existent ID?\n\n**Expected Response:** 404 Not Found\n\nTry with an ID like '000000000000000000000000'",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/tasks/000000000000000000000000",
+              "host": ["{{baseURL}}"],
+              "path": ["api", "tasks", "000000000000000000000000"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test: Invalid Pagination (page=0)",
+          "description": "What happens when you send invalid pagination parameters?\n\n**Expected Response:** 400 Bad Request\n\nPage must be >= 1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/tasks?page=0&limit=5",
+              "host": ["{{baseURL}}"],
+              "path": ["api", "tasks"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Utilities - Health & Status",
+      "description": "Utility endpoints for checking API health",
       "item": [
         {
           "name": "Health Check",
+          "description": "Simple endpoint to verify the API is running\n\n**Expected Response:** 200 OK\n\n**Note:** This endpoint doesn't require authentication",
           "request": {
             "method": "GET",
             "url": {
