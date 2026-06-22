@@ -11,6 +11,7 @@ import rateLimit from 'express-rate-limit'
 
 // import User from './models/User.js'
 import authRouter from './routes/auth.router.js'
+import taskRouter from './routes/task.router.js'
 import { protect } from './middleware/auth.middleware.js'
 
 const app = express()
@@ -44,6 +45,7 @@ app.use(express.json())
 
 // ============ ROUTES ============
 app.use('/api/auth', authRouter)
+app.use('/api/tasks', taskRouter)
 
 app.get('/', (req, res) => {
   res.send('TaskForge API is running')
