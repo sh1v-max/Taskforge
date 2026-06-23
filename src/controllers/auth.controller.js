@@ -42,8 +42,12 @@ export const register = async (req, res) => {
     //   updatedAt: ISODate("2026-05-13T06:44:23.280Z")
     // }
 
+    // Generate token for newly registered user
+    const token = generateToken(user._id)
+
     res.status(201).json({
       message: 'user registered successfully',
+      token,
       user: {
         id: user._id,
         name: user.name,
