@@ -119,8 +119,8 @@ async function runTests() {
     // Test 2: Login
     try {
       const loginRes = await makeRequest('POST', '/api/auth/login', {
-        email: 'john@example.com',
-        password: 'SecurePassword123!',
+        email: uniqueEmail,
+        password: 'TestPassword123!',
       });
 
       if (loginRes.status === 200 && loginRes.body.token) {

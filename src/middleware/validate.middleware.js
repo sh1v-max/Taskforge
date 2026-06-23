@@ -48,15 +48,15 @@ export const validateBody = (schema) => {
     // If validation failed
     if (!result.success) {
       // Format error messages for frontend
-      const errors = result.error.errors.map((err) => ({
-        field: err.path.join('.'), // e.g., "status"
-        message: err.message, // e.g., "Status must be pending, in-progress, or completed"
+      const errors = (result.error.errors || []).map((err) => ({
+        field: err.path.join('.') || 'unknown', // e.g., "status"
+        message: err.message || 'Validation error', // e.g., "Status must be pending, in-progress, or completed"
       }))
 
       return res.status(400).json({
         status: 'error',
         message: 'Validation failed',
-        errors,
+        errors: errors.length > 0 ? errors : [{ field: 'unknown', message: result.error.message || 'Validation error' }],
       })
     }
 
@@ -100,15 +100,15 @@ export const validateQuery = (schema) => {
     const result = schema.safeParse(req.query)
 
     if (!result.success) {
-      const errors = result.error.errors.map((err) => ({
-        field: err.path.join('.'),
-        message: err.message,
+      const errors = (result.error.errors || []).map((err) => ({
+        field: err.path.join('.') || 'unknown',
+        message: err.message || 'Validation error',
       }))
 
       return res.status(400).json({
         status: 'error',
         message: 'Invalid query parameters',
-        errors,
+        errors: errors.length > 0 ? errors : [{ field: 'unknown', message: result.error.message || 'Validation error' }],
       })
     }
 
