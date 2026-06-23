@@ -11,7 +11,7 @@
  * - MongoDB must be connected
  */
 
-const http = require('http');
+import http from 'http';
 
 const BASE_URL = 'http://localhost:5000';
 let authToken = '';
