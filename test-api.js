@@ -89,6 +89,9 @@ async function runTests() {
   let passed = 0;
   let failed = 0;
 
+  // Declare variables outside try blocks so they can be used across tests
+  let uniqueEmail = `user-${Date.now()}@test.com`;
+
   try {
     // ==================== PHASE 1: AUTH ====================
     console.log(`${colors.blue}Phase 1: Authentication${colors.reset}`);
@@ -96,7 +99,6 @@ async function runTests() {
 
     // Test 1: Register
     try {
-      const uniqueEmail = `user-${Date.now()}@test.com`;
       const registerRes = await makeRequest('POST', '/api/auth/register', {
         name: 'Test User',
         email: uniqueEmail,

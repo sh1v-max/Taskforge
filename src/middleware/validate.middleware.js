@@ -113,9 +113,9 @@ export const validateQuery = (schema) => {
     }
 
     // ✅ Validation passed!
-    // Replace req.query with validated and coerced data
-    // Now req.query.page is a number, not a string
-    req.query = result.data
+    // Store validated query data in req.validatedQuery
+    // Controllers can use req.validatedQuery for coerced/validated values
+    req.validatedQuery = result.data
 
     next()
   }

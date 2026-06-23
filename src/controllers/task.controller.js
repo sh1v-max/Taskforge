@@ -121,9 +121,10 @@ export const getTasks = async (req, res) => {
   }
 
   // ============ APPLY PAGINATION ============
-  // page and limit are already validated and have defaults (page=1, limit=10)
-  const page = req.query.page || 1
-  const limit = req.query.limit || 10
+  // Use validatedQuery for coerced numeric values, with fallback to req.query
+  const validatedQuery = req.validatedQuery || req.query
+  const page = validatedQuery.page || 1
+  const limit = validatedQuery.limit || 10
   const skip = (page - 1) * limit
 
   mongoQuery = mongoQuery.skip(skip).limit(limit)
