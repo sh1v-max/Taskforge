@@ -150,7 +150,7 @@ async function runTests() {
           title: 'Test Task ' + Date.now(),
           description: 'Testing the API',
           status: 'pending',
-          dueDate: '2026-12-31',
+          dueDate: '2026-12-31T23:59:59Z',
         },
         { Authorization: `Bearer ${authToken}` }
       );
@@ -174,8 +174,8 @@ async function runTests() {
         Authorization: `Bearer ${authToken}`,
       });
 
-      if (getRes.status === 200 && Array.isArray(getRes.body)) {
-        test('Get All Tasks - GET /api/tasks', true, `Status: ${getRes.status}, Found: ${getRes.body.length} tasks`);
+      if (getRes.status === 200 && getRes.body.tasks && Array.isArray(getRes.body.tasks)) {
+        test('Get All Tasks - GET /api/tasks', true, `Status: ${getRes.status}, Found: ${getRes.body.tasks.length} tasks`);
         passed++;
       } else {
         test('Get All Tasks - GET /api/tasks', false, `Status: ${getRes.status}`);
@@ -242,7 +242,7 @@ async function runTests() {
         Authorization: `Bearer ${authToken}`,
       });
 
-      if (filterRes.status === 200 && Array.isArray(filterRes.body)) {
+      if (filterRes.status === 200 && filterRes.body.tasks && Array.isArray(filterRes.body.tasks)) {
         test('Filtering - GET /api/tasks?status=pending', true, `Status: ${filterRes.status}`);
         passed++;
       } else {
