@@ -6,6 +6,24 @@
 
 ---
 
+## 🔗 Quick Navigation - Click to View Code
+
+### Core Components
+- **Main App:** [src/app.js](src/app.js) | [src/server.js](src/server.js)
+- **Models:** [User.js](src/models/User.js) | [Task.js](src/models/Task.js)
+- **Schemas:** [task.schema.js](src/schemas/task.schema.js)
+- **Controllers:** [auth.controller.js](src/controllers/auth.controller.js) | [task.controller.js](src/controllers/task.controller.js)
+- **Routes:** [auth.router.js](src/routes/auth.router.js) | [task.router.js](src/routes/task.router.js)
+- **Middleware:** [auth.middleware.js](src/middleware/auth.middleware.js) | [validate.middleware.js](src/middleware/validate.middleware.js)
+- **Utils:** [generateToken.js](src/utils/generateToken.js)
+
+### Testing & Documentation
+- **Tests:** [test-api.js](test-api.js) - 12 automated tests
+- **Test Guide:** [test.md](test.md) - Detailed test documentation
+- **Test Action:** [test_action.md](test_action.md) - Step-by-step testing guide
+
+---
+
 ## 📚 Table of Contents
 
 1. [Project Architecture](#project-architecture)
@@ -168,6 +186,15 @@ TaskForge-API/
 ├── test_action.md                      # Testing action guide
 └── overview.md                         # This file!
 ```
+
+**Click links below to view source code:**
+- **Models:** [User.js](src/models/User.js) | [Task.js](src/models/Task.js)
+- **Schemas:** [task.schema.js](src/schemas/task.schema.js)
+- **Controllers:** [auth.controller.js](src/controllers/auth.controller.js) | [task.controller.js](src/controllers/task.controller.js)
+- **Routes:** [auth.router.js](src/routes/auth.router.js) | [task.router.js](src/routes/task.router.js)
+- **Middleware:** [auth.middleware.js](src/middleware/auth.middleware.js) | [validate.middleware.js](src/middleware/validate.middleware.js)
+- **Utils:** [generateToken.js](src/utils/generateToken.js)
+- **Main:** [app.js](src/app.js) | [server.js](src/server.js)
 
 ---
 
@@ -513,7 +540,7 @@ API abuse:
 
 ## 📊 Models & Database
 
-### User Model (models/User.js)
+### User Model ([models/User.js](src/models/User.js))
 
 ```javascript
 const userSchema = new mongoose.Schema({
@@ -564,7 +591,7 @@ userSchema.methods.comparePassword = async function(enteredPassword) {
 
 ---
 
-### Task Model (models/Task.js)
+### Task Model ([models/Task.js](src/models/Task.js))
 
 ```javascript
 const taskSchema = new mongoose.Schema({
@@ -625,7 +652,7 @@ One task → One user
 
 #### **Layer 1: Zod (Request Validation)**
 
-**Location:** `src/schemas/task.schema.js`
+**Location:** [src/schemas/task.schema.js](src/schemas/task.schema.js)
 
 ```javascript
 // CreateTaskSchema - validates POST /api/tasks body
@@ -708,6 +735,11 @@ Mongoose validation (database):
 
 ## 🔄 Middleware Pipeline
 
+**Related Files:**
+- [src/app.js](src/app.js) - Main middleware setup
+- [src/middleware/auth.middleware.js](src/middleware/auth.middleware.js) - Auth protection
+- [src/middleware/validate.middleware.js](src/middleware/validate.middleware.js) - Request validation
+
 ### Order of Middleware Execution
 
 ```
@@ -744,6 +776,8 @@ Response sent to client
 
 ### Middleware Chain: Authentication
 
+**Code:** [src/middleware/auth.middleware.js](src/middleware/auth.middleware.js)
+
 ```javascript
 // In auth.middleware.js
 export const protect = (req, res, next) => {
@@ -772,7 +806,11 @@ export const protect = (req, res, next) => {
 
 ## 🎮 Controllers & Business Logic
 
-### Auth Controller (auth.controller.js)
+**Related Files:**
+- [src/controllers/auth.controller.js](src/controllers/auth.controller.js) - Auth logic
+- [src/controllers/task.controller.js](src/controllers/task.controller.js) - Task CRUD
+
+### Auth Controller ([auth.controller.js](src/controllers/auth.controller.js))
 
 #### **Register Function**
 
@@ -901,7 +939,7 @@ If no match: Return 400 "Invalid credentials"
 
 ---
 
-### Task Controller (task.controller.js)
+### Task Controller ([task.controller.js](src/controllers/task.controller.js))
 
 #### **Create Task**
 
@@ -1106,7 +1144,11 @@ export const deleteTask = async (req, res) => {
 
 ## 🛣️ Routes & Endpoints
 
-### Auth Routes (auth.router.js)
+**Related Files:**
+- [src/routes/auth.router.js](src/routes/auth.router.js) - Auth endpoints
+- [src/routes/task.router.js](src/routes/task.router.js) - Task endpoints
+
+### Auth Routes ([auth.router.js](src/routes/auth.router.js))
 
 ```javascript
 import express from 'express'
@@ -1136,7 +1178,7 @@ Response: 200 { token, user }
 
 ---
 
-### Task Routes (task.router.js)
+### Task Routes ([task.router.js](src/routes/task.router.js))
 
 ```javascript
 import express from 'express'
@@ -1773,7 +1815,7 @@ JWT_SECRET=supersecretkey123
 
 ### Source Files
 
-**`src/server.js`** - Application entry point
+**[src/server.js](src/server.js)** - Application entry point
 ```javascript
 import mongoose from 'mongoose'
 import app from './app.js'
@@ -1789,7 +1831,7 @@ app.listen(PORT, () => {
 })
 ```
 
-**`src/app.js`** - Express setup & middleware
+**[src/app.js](src/app.js)** - Express setup & middleware
 ```javascript
 import express from 'express'
 import helmet from 'helmet'
