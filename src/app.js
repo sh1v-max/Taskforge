@@ -13,6 +13,7 @@ import rateLimit from 'express-rate-limit'
 import authRouter from './routes/auth.router.js'
 import taskRouter from './routes/task.router.js'
 import { protect } from './middleware/auth.middleware.js'
+import { errorHandler } from './middleware/error.middleware.js'
 
 const app = express()
 
@@ -72,5 +73,9 @@ app.get('/api/protected', protect, (req, res) => {
 //     res.status(500).json({ message: 'Internal server error' })
 //   }
 // })
+
+// ============ ERROR HANDLER MIDDLEWARE ============
+// MUST be last - catches all errors from routes and middleware above
+app.use(errorHandler)
 
 export default app

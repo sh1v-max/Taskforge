@@ -1,3 +1,4 @@
+import asyncHandler from 'express-async-handler'
 import User from '../models/User.js'
 import generateToken from '../utils/generateToken.js'
 
@@ -11,60 +12,40 @@ import generateToken from '../utils/generateToken.js'
 // if the user does not exist, it creates a new user in the database
 // after creating the user, it returns a 201 status code with a success message and the user details (excluding the password)
 
-export const register = async (req, res) => {
-  try {
-    // extract data from req.body
-    const { name, email, password } = req.body
+export const register = asyncHandler(async (req, res) => {
+  // extract data from req.body
+  const { name, email, password } = req.body
 
-    // check if user already exists
-    const existingUser = await User.findOne({ email })
+  // check if user already exists
+  const existingUser = await User.findOne({ email })
 
-    if (existingUser) {
-      return res.status(400).json({
-        message: 'user already exists',
-      })
-    }
-
-    // create user if not exists
-    const user = await User.create({
-      name,
-      email,
-      password,
-    })
-    // example stored document
-    // {
-    //   _id: new ObjectId("691592a74df2a644e6f0f0e0"),
-    //   name: "John Doe",
-    //   email: "[EMAIL_ADDRESS]",
-    //   password: "[PASSWORD]",
-    //   role: "user",
-    //   createdAt: ISODate("2026-05-13T06:44:23.280Z"),
-    //   updatedAt: ISODate("2026-05-13T06:44:23.280Z")
-    // }
-
-    // Generate token for newly registered user
-    const token = generateToken(user._id)
-
-    res.status(201).json({
-      message: 'user registered successfully',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    })
-    // this is success response
-    // 201, because resource created successfully
-  } catch (error) {
-    res.status(500).json({
-      message: 'Server error',
-      error: error.message,
+  if (existingUser) {
+    return res.status(400).json({
+      message: 'user already exists',
     })
   }
-  // return error if anything unexpected occurs
-}
+
+  // create user if not exists
+  const user = await User.create({
+    name,
+    email,
+    password,
+  })
+
+  // Generate token for newly registered user
+  const token = generateToken(user._id)
+
+  res.status(201).json({
+    message: 'user registered successfully',
+    token,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  })
+})
 
 // registration flow
 // Receive name/email/password
@@ -88,52 +69,43 @@ export const register = async (req, res) => {
 // if the user exists, it checks if the password is correct
 // if the password is incorrect, it returns a 400 status code with an error message
 // if the password is correct, it returns a 200 status code with a success message and the user details (excluding the password)
-export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body
+export const login = asyncHandler(async (req, res) => {
+  const { email, password } = req.body
 
-    // find user by email
-    const user = await User.findOne({ email })
+  // find user by email
+  const user = await User.findOne({ email })
 
-    // if user not found, return error
-    if (!user) {
-      return res.status(400).json({
-        message: 'Invalid credentials',
-      })
-    }
-    // generic error message, so we don't reveal whether the email or password was incorrect
-
-    // compare password
-    // this will call the custom method we created in the user model to compare the plain password with the hashed password
-    const isMatch = await user.comparePassword(password)
-
-    if (!isMatch) {
-      return res.status(400).json({
-        message: 'Invalid credentials',
-      })
-    }
-
-    // generate JWT token, and send success response
-    const token = generateToken(user._id)
-
-    // sending user info, and token to frontend
-    res.status(200).json({
-      message: 'Login successful',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    })
-  } catch (error) {
-    res.status(500).json({
-      message: 'Server error',
-      error: error.message,
+  // if user not found, return error
+  if (!user) {
+    return res.status(400).json({
+      message: 'Invalid credentials',
     })
   }
-}
+
+  // compare password
+  const isMatch = await user.comparePassword(password)
+
+  if (!isMatch) {
+    return res.status(400).json({
+      message: 'Invalid credentials',
+    })
+  }
+
+  // generate JWT token, and send success response
+  const token = generateToken(user._id)
+
+  // sending user info, and token to frontend
+  res.status(200).json({
+    message: 'Login successful',
+    token,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  })
+})
 
 // simple login response
 // {

@@ -1,3 +1,4 @@
+import asyncHandler from 'express-async-handler'
 import Task from '../models/Task.js'
 
 /**
@@ -41,7 +42,7 @@ import Task from '../models/Task.js'
  * - We FORCE user: req.user.id to prevent users from creating tasks for others
  * - This ensures req.body.user is IGNORED; we always use the logged-in user's ID
  */
-export const createTask = async (req, res) => {
+export const createTask = asyncHandler(async (req, res) => {
   // req.user is set by the protect middleware in auth.middleware.js
   // It contains the decoded JWT token info: { id: "...", email: "..." }
 
@@ -63,7 +64,7 @@ export const createTask = async (req, res) => {
   // Send response to client
   // 201 = Created (new resource was created)
   res.status(201).json(task)
-}
+})
 
 // ============ GET ALL TASKS (GET /api/tasks) ============
 /**
@@ -94,7 +95,7 @@ export const createTask = async (req, res) => {
  * - Sorting: ?sortBy=dueDate:asc → earliest due dates first
  * - Pagination: ?page=2&limit=5 → tasks 6-10
  */
-export const getTasks = async (req, res) => {
+export const getTasks = asyncHandler(async (req, res) => {
   // ============ BUILD BASE QUERY ============
   // Start with: find all tasks for this user
   // This is the security check - user can only see their own tasks
@@ -144,7 +145,7 @@ export const getTasks = async (req, res) => {
     limit,
     total, // Frontend uses this to calculate total pages
   })
-}
+})
 
 // ============ GET SINGLE TASK (GET /api/tasks/:id) ============
 /**
@@ -172,7 +173,7 @@ export const getTasks = async (req, res) => {
  * - If user doesn't own the task, findOne returns null
  * - We return 404 (user doesn't know it exists)
  */
-export const getTaskById = async (req, res) => {
+export const getTaskById = asyncHandler(async (req, res) => {
   // req.params.id comes from the URL path: /api/tasks/:id
   const { id } = req.params
 
@@ -190,7 +191,7 @@ export const getTaskById = async (req, res) => {
 
   // Task found and user owns it
   res.json(task)
-}
+})
 
 // ============ UPDATE TASK (PUT /api/tasks/:id) ============
 /**
@@ -218,7 +219,7 @@ export const getTaskById = async (req, res) => {
  * - new: true → Returns updated document (not the old one)
  * - runValidators: true → Runs Mongoose schema validation
  */
-export const updateTask = async (req, res) => {
+export const updateTask = asyncHandler(async (req, res) => {
   const { id } = req.params
 
   // findOneAndUpdate:
@@ -243,7 +244,7 @@ export const updateTask = async (req, res) => {
   }
 
   res.json(task)
-}
+})
 
 // ============ DELETE TASK (DELETE /api/tasks/:id) ============
 /**
@@ -266,7 +267,7 @@ export const updateTask = async (req, res) => {
  * - Checks user owns the task
  * - Can't delete someone else's tasks
  */
-export const deleteTask = async (req, res) => {
+export const deleteTask = asyncHandler(async (req, res) => {
   const { id } = req.params
 
   // findOneAndDelete:
@@ -285,7 +286,7 @@ export const deleteTask = async (req, res) => {
 
   // Return 200 with success message
   res.json({ message: 'Task deleted successfully' })
-}
+})
 
 /**
  * SUMMARY OF CONTROLLERS:
