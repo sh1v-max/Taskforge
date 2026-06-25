@@ -1,8 +1,9 @@
 # TaskForge API - Complete Technical Overview
 
-**Status:** Steps 1-13 Complete ✅
+**Status:** Steps 1-13, 17-18, 20 Complete ✅
 **All Tests Passing:** 12/12 ✅
 **Created:** 2026-06-23
+**Last Updated:** 2026-06-25
 
 ---
 
@@ -11,11 +12,12 @@
 ### Core Components
 - **Main App:** [src/app.js](src/app.js) | [src/server.js](src/server.js)
 - **Models:** [User.js](src/models/User.js) | [Task.js](src/models/Task.js)
-- **Schemas:** [task.schema.js](src/schemas/task.schema.js)
+- **Schemas:** [task.schema.js](src/schemas/task.schema.js) | [auth.schema.js](src/schemas/auth.schema.js)
 - **Controllers:** [auth.controller.js](src/controllers/auth.controller.js) | [task.controller.js](src/controllers/task.controller.js)
 - **Routes:** [auth.router.js](src/routes/auth.router.js) | [task.router.js](src/routes/task.router.js)
-- **Middleware:** [auth.middleware.js](src/middleware/auth.middleware.js) | [validate.middleware.js](src/middleware/validate.middleware.js)
+- **Middleware:** [auth.middleware.js](src/middleware/auth.middleware.js) | [validate.middleware.js](src/middleware/validate.middleware.js) | [error.middleware.js](src/middleware/error.middleware.js)
 - **Utils:** [generateToken.js](src/utils/generateToken.js)
+- **Config:** [swagger.js](src/config/swagger.js) - OpenAPI/Swagger configuration
 
 ### Testing & Documentation
 - **Tests:** [test-api.js](test-api.js) - 12 automated tests
@@ -38,7 +40,8 @@
 10. [Routes & Endpoints](#routes--endpoints)
 11. [Request/Response Examples](#requestresponse-examples)
 12. [Error Handling](#error-handling)
-13. [Key Learning Concepts](#key-learning-concepts)
+13. [Swagger/OpenAPI Documentation](#swaggeropenapi-documentation)
+14. [Key Learning Concepts](#key-learning-concepts)
 
 ---
 
@@ -1858,52 +1861,199 @@ export default app
 
 ---
 
-## 🚀 Next Steps (Steps 14-20)
+## 🔄 Error Handling Middleware (Step 17)
 
-After mastering this foundation, the remaining steps are:
+Global error handler catches and formats all errors consistently.
 
-**Step 14-16:** Already implemented in getTasks controller
-- Filtering by status ✓
-- Sorting by field ✓
-- Pagination ✓
+**File:** [src/middleware/error.middleware.js](src/middleware/error.middleware.js)
 
-**Step 17:** Global Error Handler (optional enhancement)
-- Centralize error formatting
-- Catch unexpected errors
-- Provide consistent responses
+### What It Handles:
+- **Mongoose Validation Errors** → 400 Bad Request
+- **Mongoose Cast Errors** (invalid ObjectId) → 400 Bad Request
+- **Duplicate Key Errors** (email exists) → 400 Bad Request
+- **JWT Errors** (invalid/expired token) → 401 Unauthorized
+- **Custom App Errors** (any error with statusCode property) → custom status
+- **Generic Server Errors** → 500 Internal Server Error
 
-**Step 18:** Async Handler Refactor (optional cleanup)
-- Remove try/catch from controllers
-- Cleaner code
-- Automatic error propagation
+### Example:
+```javascript
+// In middleware/error.middleware.js
+export const errorHandler = (err, req, res, next) => {
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Validation error',
+      errors: Object.values(err.errors).map(e => ({
+        field: e.path,
+        message: e.message
+      }))
+    })
+  }
+  // ... handle other error types ...
+}
+```
+
+### Integration:
+- Applied last in [src/app.js](src/app.js) after all routes
+- Must be last middleware to catch all errors
+- Works with asyncHandler to provide unified error responses
+
+---
+
+## 🎯 Async Handler Refactoring (Step 18)
+
+All controller functions wrapped with `express-async-handler` for automatic error catching.
+
+### What Changed:
+- Removed try/catch blocks from all controllers
+- Wrapped each function with `asyncHandler`
+- Errors automatically forwarded to error middleware
+- Cleaner, more readable code
+
+### Before:
+```javascript
+export const createTask = async (req, res) => {
+  try {
+    const task = await Task.create({ ... })
+    res.status(201).json(task)
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+```
+
+### After:
+```javascript
+export const createTask = asyncHandler(async (req, res) => {
+  const task = await Task.create({ ... })
+  res.status(201).json(task)
+  // Error automatically caught and handled
+})
+```
+
+### Controllers Updated:
+- [src/controllers/auth.controller.js](src/controllers/auth.controller.js): register, login
+- [src/controllers/task.controller.js](src/controllers/task.controller.js): createTask, getTasks, getTaskById, updateTask, deleteTask
+
+---
+
+## 📚 Swagger/OpenAPI Documentation (Step 20)
+
+Full interactive API documentation with Swagger UI.
+
+**File:** [src/config/swagger.js](src/config/swagger.js)
+
+### Access Swagger UI:
+```
+http://localhost:5000/api/docs
+```
+
+### Features:
+- **Interactive Testing** - Try endpoints directly from the browser
+- **Request/Response Examples** - See exactly what to send and expect
+- **Authentication** - Enter JWT token to test protected routes
+- **Schema Definitions** - Complete data model documentation
+- **Error Documentation** - All possible error responses explained
+
+### Swagger Configuration:
+```javascript
+// src/config/swagger.js
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'TaskForge API',
+      version: '1.0.0',
+      description: 'Task management API with JWT auth...'
+    },
+    servers: [
+      { url: 'http://localhost:5000' },
+      { url: 'https://api.taskforge.com' }
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: { type: 'http', scheme: 'bearer' }
+      },
+      schemas: { /* User, Task, Error schemas */ }
+    }
+  },
+  apis: ['./src/routes/*.js'] // Scan route files for documentation
+}
+```
+
+### Documentation in Routes:
+Each endpoint documented with JSDoc comments in route files:
+
+**Authentication Endpoints:**
+- POST /api/auth/register - Create new user account
+- POST /api/auth/login - Authenticate and get JWT token
+
+**Task Endpoints:**
+- POST /api/tasks - Create a new task
+- GET /api/tasks - Get all tasks (with filtering, sorting, pagination)
+- GET /api/tasks/:id - Get a specific task
+- PUT /api/tasks/:id - Update a task
+- DELETE /api/tasks/:id - Delete a task
+
+### Response Schemas:
+```javascript
+// All responses documented with proper schemas
+User: { _id, name, email, role, createdAt, updatedAt }
+Task: { _id, title, description, status, user, dueDate, createdAt, updatedAt }
+AuthResponse: { message, token, user: { id, name, email, role } }
+TasksResponse: { tasks: [], page, limit, total }
+Error: { status, message, errors: [] }
+```
+
+---
+
+## 🚀 Implementation Summary
+
+**Completed Steps:**
+- ✅ Steps 1-13: Core API with auth, CRUD, validation
+- ✅ Step 17: Global error handler middleware
+- ✅ Step 18: Async handler refactoring
+- ✅ Step 20: Swagger/OpenAPI documentation
 
 **Step 19:** Rate Limiting (already implemented in app.js)
-- Prevent brute force
+- Prevent brute force attacks
 - Protect against DoS
-
-**Step 20:** Swagger API Documentation
-- Interactive API explorer
-- Auto-generated from code
-- Frontend integration guide
+- 100 requests per 15 minutes per IP
 
 ---
 
 ## 📖 Summary
 
 You now have a **production-ready REST API** with:
-- ✅ Secure authentication (JWT)
-- ✅ Full CRUD operations
+- ✅ Secure authentication (JWT with token generation)
+- ✅ Full CRUD operations for tasks
 - ✅ Advanced querying (filter, sort, paginate)
-- ✅ Input validation (Zod + Mongoose)
+- ✅ Input validation (Zod at entry + Mongoose at database)
 - ✅ Security headers (Helmet, CORS)
-- ✅ Rate limiting
+- ✅ Rate limiting (100 req/15min per IP)
 - ✅ User data ownership protection
-- ✅ Complete test coverage (12/12 passing)
+- ✅ Global error handler with consistent responses
+- ✅ Async handler refactoring (clean code)
+- ✅ Complete API documentation (Swagger/OpenAPI)
+- ✅ Interactive API explorer (Swagger UI at /api/docs)
+- ✅ Complete test coverage (12/12 tests passing)
 
-**Key principles:**
-- Middleware pipeline for clean separation
-- Validation at entry and database
-- Security through multiple layers
+**Architecture Highlights:**
+- Middleware pipeline for clean separation of concerns
+- Multi-layer validation (Zod → Mongoose)
+- Security through multiple layers (JWT + ownership checks)
+- Centralized error handling
+- Auto-documented API endpoints
+
+**What You Can Do:**
+- Register and login users securely with JWT
+- Create, read, update, delete tasks
+- Filter tasks by status
+- Sort tasks by any field
+- Paginate results with limit/page
+- Test all endpoints via Swagger UI
+- See request/response examples
+- Try endpoints directly in the browser
 - Stateless authentication with JWT
 - Ownership verification for all operations
 - Async/await for readable code
