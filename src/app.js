@@ -8,12 +8,14 @@ import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
+import swaggerUi from 'swagger-ui-express'
 
 // import User from './models/User.js'
 import authRouter from './routes/auth.router.js'
 import taskRouter from './routes/task.router.js'
 import { protect } from './middleware/auth.middleware.js'
 import { errorHandler } from './middleware/error.middleware.js'
+import swaggerSpec from './config/swagger.js'
 
 const app = express()
 
@@ -43,6 +45,11 @@ app.use('/api/', apiLimiter)
 // ============ BODY PARSER MIDDLEWARE ============
 // Parse incoming JSON bodies
 app.use(express.json())
+
+// ============ SWAGGER DOCUMENTATION ============
+// Serve OpenAPI/Swagger documentation at /api/docs
+// Interactive UI allows testing API endpoints
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // ============ ROUTES ============
 app.use('/api/auth', authRouter)

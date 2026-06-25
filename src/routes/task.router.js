@@ -61,112 +61,304 @@ router.use(protect)
 
 // ============ CREATE TASK ============
 /**
- * POST /api/tasks
- *
- * Request:
- * {
- *   "title": "Buy milk",
- *   "description": "From supermarket",
- *   "status": "pending",
- *   "dueDate": "2026-06-15"
- * }
- *
- * Response (201 Created):
- * {
- *   "_id": "507f1f77bcf86cd799439011",
- *   "title": "Buy milk",
- *   "user": "607f1f77bcf86cd799439012",
- *   "createdAt": "2026-06-03T10:00:00Z",
- *   "updatedAt": "2026-06-03T10:00:00Z"
- * }
- *
- * Note: No validateBody middleware yet
- * We'll add that in Step 13.5
+ * @swagger
+ * /api/tasks:
+ *   post:
+ *     summary: Create a new task
+ *     description: Create a new task for the authenticated user. User ID is automatically set from the JWT token.
+ *     tags:
+ *       - Tasks
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: Buy milk
+ *               description:
+ *                 type: string
+ *                 example: Get milk from the grocery store
+ *               status:
+ *                 type: string
+ *                 enum: [pending, in-progress, completed]
+ *                 default: pending
+ *               dueDate:
+ *                 type: string
+ *                 format: date-time
+ *                 example: 2026-12-31T23:59:59Z
+ *     responses:
+ *       201:
+ *         description: Task created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Task'
+ *       400:
+ *         description: Validation failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post('/', validateBody(createTaskSchema), createTask)
 
 // ============ GET ALL TASKS ============
 /**
- * GET /api/tasks
- * GET /api/tasks?status=pending
- * GET /api/tasks?status=pending&sortBy=dueDate:asc&page=1&limit=10
- *
- * Query Parameters (optional):
- * - status: Filter by status (pending, in-progress, completed)
- * - sortBy: Sort field and direction (dueDate:asc, createdAt:desc)
- * - page: Pagination page number (default: 1)
- * - limit: Items per page (default: 10, max: 100)
- *
- * Response (200 OK):
- * {
- *   "tasks": [
- *     { "_id": "...", "title": "Buy milk", ... },
- *     { "_id": "...", "title": "Finish project", ... }
- *   ],
- *   "page": 1,
- *   "limit": 10,
- *   "total": 23
- * }
- *
- * Validation: validateQuery validates and coerces page/limit to numbers
+ * @swagger
+ * /api/tasks:
+ *   get:
+ *     summary: Get all tasks for the authenticated user
+ *     description: Retrieve all tasks with support for filtering, sorting, and pagination
+ *     tags:
+ *       - Tasks
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: status
+ *         in: query
+ *         description: Filter by task status
+ *         schema:
+ *           type: string
+ *           enum: [pending, in-progress, completed]
+ *       - name: sortBy
+ *         in: query
+ *         description: Sort field and direction (e.g., "dueDate:asc" or "createdAt:desc")
+ *         schema:
+ *           type: string
+ *           example: dueDate:asc
+ *       - name: page
+ *         in: query
+ *         description: Page number for pagination (default 1)
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *       - name: limit
+ *         in: query
+ *         description: Number of tasks per page (default 10)
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *     responses:
+ *       200:
+ *         description: List of tasks retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TasksResponse'
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get('/', validateQuery(tasksQuerySchema), getTasks)
 
 // ============ GET SINGLE TASK ============
 /**
- * GET /api/tasks/:id
- *
- * URL Parameter:
- * :id = MongoDB ObjectId of the task
- *
- * Response (200 OK):
- * {
- *   "_id": "507f1f77bcf86cd799439011",
- *   "title": "Buy milk",
- *   "user": "607f1f77bcf86cd799439012",
- *   ...
- * }
- *
- * Response (404 Not Found):
- * { "error": "Task not found" }
- *
- * Note: :id in the path becomes req.params.id in controller
+ * @swagger
+ * /api/tasks/{id}:
+ *   get:
+ *     summary: Get a single task by ID
+ *     description: Retrieve a specific task by its ID. User can only access their own tasks.
+ *     tags:
+ *       - Tasks
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: MongoDB ObjectId of the task
+ *         schema:
+ *           type: string
+ *           example: 507f1f77bcf86cd799439011
+ *     responses:
+ *       200:
+ *         description: Task retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Task'
+ *       400:
+ *         description: Invalid task ID format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Task not found or user does not have access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get('/:id', getTaskById)
 
 // ============ UPDATE TASK ============
 /**
- * PUT /api/tasks/:id
- *
- * Request Body (any combination of these):
- * {
- *   "title": "New title",
- *   "description": "New description",
- *   "status": "in-progress",
- *   "dueDate": "2026-07-01"
- * }
- *
- * Response (200 OK):
- * {
- *   "_id": "507f1f77bcf86cd799439011",
- *   "title": "New title",
- *   "status": "in-progress",
- *   ...
- * }
- *
- * Validation: validateBody ensures all fields are valid (if provided)
+ * @swagger
+ * /api/tasks/{id}:
+ *   put:
+ *     summary: Update a task
+ *     description: Update one or more fields of a task. User can only update their own tasks.
+ *     tags:
+ *       - Tasks
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: MongoDB ObjectId of the task
+ *         schema:
+ *           type: string
+ *           example: 507f1f77bcf86cd799439011
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: Updated title
+ *               description:
+ *                 type: string
+ *                 example: Updated description
+ *               status:
+ *                 type: string
+ *                 enum: [pending, in-progress, completed]
+ *               dueDate:
+ *                 type: string
+ *                 format: date-time
+ *                 example: 2026-12-31T23:59:59Z
+ *     responses:
+ *       200:
+ *         description: Task updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Task'
+ *       400:
+ *         description: Validation failed or invalid task ID format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Task not found or user does not have access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.put('/:id', validateBody(updateTaskSchema), updateTask)
 
 // ============ DELETE TASK ============
 /**
- * DELETE /api/tasks/:id
- *
- * Response (200 OK):
- * { "message": "Task deleted successfully" }
- *
- * Response (404 Not Found):
- * { "error": "Task not found" }
+ * @swagger
+ * /api/tasks/{id}:
+ *   delete:
+ *     summary: Delete a task
+ *     description: Permanently delete a task. User can only delete their own tasks.
+ *     tags:
+ *       - Tasks
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: MongoDB ObjectId of the task
+ *         schema:
+ *           type: string
+ *           example: 507f1f77bcf86cd799439011
+ *     responses:
+ *       200:
+ *         description: Task deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Task deleted successfully
+ *       400:
+ *         description: Invalid task ID format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Task not found or user does not have access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.delete('/:id', deleteTask)
 
