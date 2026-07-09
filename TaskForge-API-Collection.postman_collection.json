@@ -1,0 +1,759 @@
+{
+  "info": {
+    "_postman_id": "taskforge-api-collection",
+    "name": "TaskForge API",
+    "description": "Complete testing collection for TaskForge API\n\nThis collection contains all endpoints organized by feature:\n- Authentication (Register, Login)\n- Task CRUD operations\n- Filtering, Sorting, Pagination\n- Error scenarios\n\nNote: Set JWT_TOKEN variable after login for protected routes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "1. Register - Create New User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Check response status\n",
+                  "pm.test(\"Status code is 201\", function () {\n",
+                  "    pm.response.to.have.status(201);\n",
+                  "});\n",
+                  "\n",
+                  "// Check response structure\n",
+                  "pm.test(\"Response has token\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.expect(jsonData).to.have.property('token');\n",
+                  "    pm.expect(jsonData).to.have.property('user');\n",
+                  "    pm.expect(jsonData.user).to.have.property('id');\n",
+                  "    pm.expect(jsonData.user).to.have.property('name');\n",
+                  "    pm.expect(jsonData.user).to.have.property('email');\n",
+                  "});\n",
+                  "\n",
+                  "// Save token to variable for later use\n",
+                  "if (pm.response.code === 201) {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.environment.set(\"JWT_TOKEN\", jsonData.token);\n",
+                  "    pm.environment.set(\"USER_ID\", jsonData.user.id);\n",
+                  "    console.log(\"✅ Token saved: \" + jsonData.token.substring(0, 20) + \"...\");\n",
+                  "}\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john{{$timestamp}}@example.com\",\n  \"password\": \"TestPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/auth/register",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "2. Login - Get JWT Token",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// This uses the email from the previous registration\n",
+                  "// Make sure to run \"Register\" first\n"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Check response status\n",
+                  "pm.test(\"Status code is 200\", function () {\n",
+                  "    pm.response.to.have.status(200);\n",
+                  "});\n",
+                  "\n",
+                  "// Check response structure\n",
+                  "pm.test(\"Login response has token and user\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.expect(jsonData).to.have.property('token');\n",
+                  "    pm.expect(jsonData).to.have.property('user');\n",
+                  "    pm.expect(jsonData.message).to.include('Login successful');\n",
+                  "});\n",
+                  "\n",
+                  "// Save token for authenticated requests\n",
+                  "if (pm.response.code === 200) {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.environment.set(\"JWT_TOKEN\", jsonData.token);\n",
+                  "    pm.environment.set(\"USER_ID\", jsonData.user.id);\n",
+                  "    console.log(\"✅ Logged in successfully!\");\n",
+                  "}\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"TestPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/auth/login",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📝 Task CRUD Operations",
+      "item": [
+        {
+          "name": "3. Create Task - Single Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () {\n",
+                  "    pm.response.to.have.status(201);\n",
+                  "});\n",
+                  "\n",
+                  "pm.test(\"Task created with correct fields\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.expect(jsonData).to.have.property('_id');\n",
+                  "    pm.expect(jsonData).to.have.property('title');\n",
+                  "    pm.expect(jsonData).to.have.property('status');\n",
+                  "    pm.expect(jsonData).to.have.property('user');\n",
+                  "    pm.expect(jsonData.title).to.equal('Buy Groceries');\n",
+                  "    pm.expect(jsonData.status).to.equal('pending');\n",
+                  "});\n",
+                  "\n",
+                  "// Save task ID for later use\n",
+                  "if (pm.response.code === 201) {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.environment.set(\"TASK_ID\", jsonData._id);\n",
+                  "    console.log(\"✅ Task created: \" + jsonData._id);\n",
+                  "}\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Buy Groceries\",\n  \"description\": \"Milk, eggs, bread, butter\",\n  \"status\": \"pending\",\n  \"dueDate\": \"2026-06-30T23:59:59Z\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "4. Create Multiple Tasks - For Testing",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {\n",
+                  "    pm.response.to.have.status(201);\n",
+                  "});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Complete Project Report\",\n  \"description\": \"Finish Q2 analysis and submit\",\n  \"status\": \"in-progress\",\n  \"dueDate\": \"2026-06-28T23:59:59Z\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "5. Get All Tasks",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n",
+                  "    pm.response.to.have.status(200);\n",
+                  "});\n",
+                  "\n",
+                  "pm.test(\"Response has tasks array\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.expect(jsonData).to.have.property('tasks');\n",
+                  "    pm.expect(jsonData).to.have.property('page');\n",
+                  "    pm.expect(jsonData).to.have.property('limit');\n",
+                  "    pm.expect(jsonData).to.have.property('total');\n",
+                  "    pm.expect(Array.isArray(jsonData.tasks)).to.be.true;\n",
+                  "});\n",
+                  "\n",
+                  "pm.test(\"All tasks belong to logged-in user\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    var userId = pm.environment.get('USER_ID');\n",
+                  "    jsonData.tasks.forEach(function(task) {\n",
+                  "        pm.expect(task.user).to.equal(userId);\n",
+                  "    });\n",
+                  "});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "6. Get Task by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n",
+                  "    pm.response.to.have.status(200);\n",
+                  "});\n",
+                  "\n",
+                  "pm.test(\"Returned correct task\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    var taskId = pm.environment.get('TASK_ID');\n",
+                  "    pm.expect(jsonData._id).to.equal(taskId);\n",
+                  "    pm.expect(jsonData).to.have.property('title');\n",
+                  "    pm.expect(jsonData).to.have.property('status');\n",
+                  "});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks/{{TASK_ID}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks", "{{TASK_ID}}"]
+            }
+          }
+        },
+        {
+          "name": "7. Update Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n",
+                  "    pm.response.to.have.status(200);\n",
+                  "});\n",
+                  "\n",
+                  "pm.test(\"Task updated correctly\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.expect(jsonData.status).to.equal('completed');\n",
+                  "    pm.expect(jsonData.description).to.include('Updated');\n",
+                  "});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\",\n  \"description\": \"Updated: Groceries bought successfully!\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks/{{TASK_ID}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks", "{{TASK_ID}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔍 Advanced Features",
+      "item": [
+        {
+          "name": "8. Filter Tasks by Status - Pending",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n",
+                  "    pm.response.to.have.status(200);\n",
+                  "});\n",
+                  "\n",
+                  "pm.test(\"Only returns pending tasks\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    jsonData.tasks.forEach(function(task) {\n",
+                  "        pm.expect(task.status).to.equal('pending');\n",
+                  "    });\n",
+                  "});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks?status=pending",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "9. Filter Tasks by Status - In-Progress",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks?status=in-progress",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "in-progress"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "10. Sort Tasks by Due Date (Ascending)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n",
+                  "    pm.response.to.have.status(200);\n",
+                  "});\n",
+                  "\n",
+                  "pm.test(\"Tasks are sorted by due date\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    if (jsonData.tasks.length > 1) {\n",
+                  "        for (let i = 0; i < jsonData.tasks.length - 1; i++) {\n",
+                  "            var current = new Date(jsonData.tasks[i].dueDate).getTime();\n",
+                  "            var next = new Date(jsonData.tasks[i + 1].dueDate).getTime();\n",
+                  "            pm.expect(current).to.be.lessThan(next);\n",
+                  "        }\n",
+                  "    }\n",
+                  "});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks?sortBy=dueDate:asc",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks"],
+              "query": [
+                {
+                  "key": "sortBy",
+                  "value": "dueDate:asc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "11. Pagination - Page 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n",
+                  "    pm.response.to.have.status(200);\n",
+                  "});\n",
+                  "\n",
+                  "pm.test(\"Pagination metadata correct\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.expect(jsonData.page).to.equal(1);\n",
+                  "    pm.expect(jsonData.limit).to.equal(5);\n",
+                  "    pm.expect(jsonData.tasks.length).to.be.lessThanOrEq(5);\n",
+                  "});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks?page=1&limit=5",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "❌ Error Scenarios",
+      "item": [
+        {
+          "name": "12. Missing Auth Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function () {\n",
+                  "    pm.response.to.have.status(401);\n",
+                  "});\n",
+                  "\n",
+                  "pm.test(\"Error message indicates missing token\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.expect(jsonData.message).to.include('token');\n",
+                  "});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "13. Invalid Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n",
+                  "    pm.response.to.have.status(401);\n",
+                  "});\n",
+                  "\n",
+                  "pm.test(\"Error is 'Invalid token'\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.expect(jsonData.message).to.equal('Invalid token');\n",
+                  "});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid.token.here"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "14. Missing Required Field (title)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () {\n",
+                  "    pm.response.to.have.status(400);\n",
+                  "});\n",
+                  "\n",
+                  "pm.test(\"Error indicates missing field\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.expect(jsonData.status).to.equal('error');\n",
+                  "    pm.expect(jsonData).to.have.property('errors');\n",
+                  "});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"No title provided\",\n  \"status\": \"pending\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "15. Invalid Status Enum",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n",
+                  "    pm.response.to.have.status(400);\n",
+                  "});\n",
+                  "\n",
+                  "pm.test(\"Error mentions invalid enum value\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.expect(jsonData.status).to.equal('error');\n",
+                  "});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Task\",\n  \"status\": \"invalid-status\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "16. Task Not Found (Wrong ID)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", function () {\n",
+                  "    pm.response.to.have.status(404);\n",
+                  "});\n",
+                  "\n",
+                  "pm.test(\"Error message is 'Task not found'\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.expect(jsonData.error).to.equal('Task not found');\n",
+                  "});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks/507f1f77bcf86cd799999999",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks", "507f1f77bcf86cd799999999"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🗑️ Cleanup",
+      "item": [
+        {
+          "name": "17. Delete Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n",
+                  "    pm.response.to.have.status(200);\n",
+                  "});\n",
+                  "\n",
+                  "pm.test(\"Success message returned\", function () {\n",
+                  "    var jsonData = pm.response.json();\n",
+                  "    pm.expect(jsonData.message).to.include('deleted');\n",
+                  "});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks/{{TASK_ID}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks", "{{TASK_ID}}"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "JWT_TOKEN",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "USER_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "TASK_ID",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
