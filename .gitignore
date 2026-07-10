@@ -1,35 +1,74 @@
-# Node modules
+# ==========================================
+# Monorepo .gitignore
+# Covers both /backend and /frontend
+# ==========================================
+
+# Node modules (in any directory)
 node_modules/
+**/node_modules/
 
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
-# Environment variables
+# Environment variables (secrets - never commit!)
 .env
-.env.*
-!.env.example
+.env.local
+.env.*.local
+.env.example.local
 
 # Build folders
-dist
-build
+dist/
+build/
+*.bundle.js
+.next/
+out/
 
 # OS files
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
+*~
 
 # Editor
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+
+# Development
+.cache/
+.parcel-cache/
+.turbo/
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+
+# Monorepo specific
+backend/node_modules/
+backend/dist/
+backend/build/
+backend/.env
+backend/.env.local
+
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env
+frontend/.env.local
 
 # Misc
 *.local
-coverage
-
-# Claude documentation
-CLAUDE.md
+.DS_Store
+.vscode/
+.idea/
