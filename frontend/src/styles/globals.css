@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   TaskForge Global Styles
+   ============================================ */
+
+* {
+  @apply transition-colors duration-200;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50;
+}
+
+/* ============================================
+   Component Styles
+   ============================================ */
+
+/* Buttons */
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+}
+
+.btn-primary {
+  @apply btn bg-blue-600 text-white hover:bg-blue-700 active:scale-95;
+}
+
+.btn-secondary {
+  @apply btn bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-50 hover:bg-slate-300 dark:hover:bg-slate-600;
+}
+
+.btn-danger {
+  @apply btn bg-red-600 text-white hover:bg-red-700 active:scale-95;
+}
+
+.btn-sm {
+  @apply px-3 py-1 text-sm;
+}
+
+/* Cards */
+.card {
+  @apply bg-white dark:bg-slate-900 rounded-lg shadow-md dark:shadow-slate-800 p-4;
+}
+
+/* Forms */
+.input-field {
+  @apply w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+.label {
+  @apply block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1;
+}
+
+/* Loading */
+.spinner {
+  @apply inline-block animate-spin;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    @apply opacity-0;
+  }
+  to {
+    @apply opacity-100;
+  }
+}
+
+.fade-in {
+  @apply animate-fadeIn;
+  animation-duration: 0.3s;
+}
+
+/* ============================================
+   Utilities
+   ============================================ */
+
+.container {
+  @apply max-w-7xl mx-auto px-4;
+}
+
+.flex-center {
+  @apply flex items-center justify-center;
+}
+
+.error-text {
+  @apply text-red-600 dark:text-red-400 text-sm;
+}
+
+.success-text {
+  @apply text-green-600 dark:text-green-400 text-sm;
+}
