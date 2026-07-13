@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext'
 import { LoginPage } from './pages/Auth/LoginPage'
 import { RegisterPage } from './pages/Auth/RegisterPage'
+import { Dashboard } from './pages/Dashboard/Dashboard'
+import { PrivateRoute } from './components/Auth/PrivateRoute'
 
 function App() {
   return (
@@ -15,8 +17,8 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          {/* Dashboard (to be added in Step 5) */}
-          {/* <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} /> */}
+          {/* Dashboard (protected) */}
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
 
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
