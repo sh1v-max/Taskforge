@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { LandingPage } from './pages/LandingPage'
 import { LoginPage } from './pages/Auth/LoginPage'
 import { RegisterPage } from './pages/Auth/RegisterPage'
 import { Dashboard } from './pages/Dashboard/Dashboard'
@@ -11,7 +12,7 @@ function App() {
       <AuthProvider>
         <Routes>
           {/* Home/Landing */}
-          <Route path="/" element={<div className="flex-center min-h-screen"><h1>TaskForge Frontend 🚀</h1></div>} />
+          <Route path="/" element={<LandingPage />} />
 
           {/* Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
