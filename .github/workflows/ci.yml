@@ -1,0 +1,72 @@
+# CI pipeline — runs on every push and pull request to main.
+#
+# Two independent jobs (they run in parallel):
+#   backend  → install deps + syntax-check every JS file
+#   frontend → install deps + lint + production build
+#
+# Deployment (CD) is handled by the platforms themselves:
+#   Render and Vercel both watch the GitHub repo and auto-deploy on push
+#   to main. These CI checks act as the safety net in front of that.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      # npm ci = clean install from package-lock.json (reproducible builds)
+      - name: Install dependencies
+        run: npm ci
+
+      # node --check parses each file without executing it —
+      # catches syntax errors without needing a database connection
+      - name: Syntax check all source files
+        run: |
+          node --check server.js
+          find src -name "*.js" -print0 | xargs -0 -n1 node --check
+
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build

@@ -1,0 +1,27 @@
+# Render Blueprint — infrastructure as code for the backend.
+#
+# Instead of clicking through the Render dashboard, this file describes
+# the service. In Render: New → Blueprint → select this repo, and it
+# reads this file to create everything.
+#
+# sync: false means "don't store the value in this file" — Render will
+# prompt for it during setup (secrets never belong in git).
+
+services:
+  - type: web
+    name: taskforge-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/docs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
