@@ -19,6 +19,19 @@ import swaggerSpec from './config/swagger.js'
 
 const app = express()
 
+// Behind a reverse proxy (Render, Railway, etc.) the client's real IP
+// arrives in the X-Forwarded-For header. trust proxy tells Express to
+// use it, so req.ip is the visitor — not the proxy. Without this, the
+// rate limiter would count ALL users as one IP and block everyone.
+app.set('trust proxy', 1)
+
+// ============ HEALTH CHECK ============
+// Lightweight endpoint for uptime checks (Render pings this often).
+// Deliberately OUTSIDE /api so the rate limiter never blocks it.
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' })
+})
+
 // ============ SECURITY MIDDLEWARE ============
 // Apply security headers (helmet) FIRST - protects all responses
 app.use(helmet())
