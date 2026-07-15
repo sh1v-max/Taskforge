@@ -32,3 +32,17 @@ export const loginSchema = z.object({
 // If invalid → 400 response
 //         ↓
 // If valid → controller runs
+// this schema validates profile updates
+// all fields are optional (user may update only their name, or only their password)
+// but if newPassword is given, currentPassword must also be given
+// (we verify the current password before allowing a change)
+export const updateProfileSchema = z
+  .object({
+    name: z.string().trim().min(1, 'Name is required').optional(),
+    currentPassword: z.string().min(6, 'Password must be at least 6 characters').optional(),
+    newPassword: z.string().min(6, 'Password must be at least 6 characters').optional(),
+  })
+  .refine((data) => !data.newPassword || data.currentPassword, {
+    message: 'Current password is required to set a new password',
+    path: ['currentPassword'],
+  })

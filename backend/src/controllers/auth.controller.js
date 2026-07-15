@@ -132,3 +132,76 @@ export const login = asyncHandler(async (req, res) => {
 // Generate JWT
 //         ↓
 // Return token + user
+// getMe controller, returns the currently logged-in user's profile
+// no database query needed here: the protect middleware already
+// verified the token and fetched the user (without password) into req.user
+export const getMe = asyncHandler(async (req, res) => {
+  res.status(200).json({
+    user: {
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+      createdAt: req.user.createdAt,
+    },
+  })
+})
+
+// updateMe controller, updates the logged-in user's profile
+// supports two things:
+// 1. changing the name
+// 2. changing the password (only if the current password is correct)
+export const updateMe = asyncHandler(async (req, res) => {
+  const { name, currentPassword, newPassword } = req.body
+
+  // req.user came from protect middleware WITHOUT the password field,
+  // but comparePassword needs it — so fetch the full user here
+  const user = await User.findById(req.user._id)
+
+  // update name if provided
+  if (name) {
+    user.name = name
+  }
+
+  // change password if requested
+  if (newPassword) {
+    // verify the current password first
+    const isMatch = await user.comparePassword(currentPassword)
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: 'Current password is incorrect',
+      })
+    }
+
+    // setting user.password triggers the pre('save') hook → hashed automatically
+    user.password = newPassword
+  }
+
+  await user.save()
+
+  res.status(200).json({
+    message: 'Profile updated successfully',
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  })
+})
+
+// update flow
+// Receive name / currentPassword+newPassword
+//         ↓
+// Fetch full user (with password hash)
+//         ↓
+// Name given? → update it
+//         ↓
+// New password given? → verify current password first
+//         ↓
+// If wrong → 400
+//         ↓
+// user.save() → pre-save hook re-hashes password
+//         ↓
+// Return updated user

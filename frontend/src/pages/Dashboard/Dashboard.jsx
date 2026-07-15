@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { getTasks } from '../../api/tasks'
 import { TaskForm } from '../../components/Tasks/TaskForm'
 import { TaskCard } from '../../components/Tasks/TaskCard'
@@ -62,9 +62,12 @@ export function Dashboard() {
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">TaskForge</h1>
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <Link
+              to="/profile"
+              className="text-sm text-gray-600 dark:text-gray-400 hover:underline"
+            >
               {user?.name}
-            </span>
+            </Link>
             <button onClick={handleLogout} className="btn-secondary btn-sm">
               Logout
             </button>
