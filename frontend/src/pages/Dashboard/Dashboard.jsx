@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { getTasks } from '../../api/tasks'
 import { TaskForm } from '../../components/Tasks/TaskForm'
 import { TaskCard } from '../../components/Tasks/TaskCard'
-import { TASK_STATUS, TASK_STATUS_LABELS } from '../../utils/constants'
+import { TASK_STATUS, TASK_STATUS_LABELS, SORT_OPTIONS } from '../../utils/constants'
+import { ThemeToggle } from '../../components/Common/ThemeToggle'
 
 export function Dashboard() {
   const { user, logout } = useAuth()
@@ -14,6 +15,7 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState(null)
   const [statusFilter, setStatusFilter] = useState('') // '' = all
+  const [sortKey, setSortKey] = useState('RECENT') // key into SORT_OPTIONS
   const [editingTask, setEditingTask] = useState(null) // null = create mode
 
   // Fetch tasks whenever the filter changes
@@ -24,6 +26,9 @@ export function Dashboard() {
         setFetchError(null)
         const params = { limit: 100 }
         if (statusFilter) params.status = statusFilter
+        // Backend expects "field:direction" e.g. "dueDate:asc"
+        const sort = SORT_OPTIONS[sortKey]
+        params.sortBy = `${sort.field}:${sort.direction}`
         const data = await getTasks(params)
         setTasks(data.tasks)
       } catch (error) {
@@ -33,7 +38,7 @@ export function Dashboard() {
       }
     }
     fetchTasks()
-  }, [statusFilter])
+  }, [statusFilter, sortKey])
 
   const handleLogout = () => {
     logout()
@@ -56,6 +61,7 @@ export function Dashboard() {
         <div className="container flex items-center justify-between py-4">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">TaskForge</h1>
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <span className="text-sm text-gray-600 dark:text-gray-400">
               {user?.name}
             </span>
@@ -85,19 +91,34 @@ export function Dashboard() {
               Your Tasks {!loading && `(${tasks.length})`}
             </h2>
 
-            {/* Status filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="input-field w-auto text-sm py-1"
-            >
-              <option value="">All</option>
-              {Object.values(TASK_STATUS).map((status) => (
-                <option key={status} value={status}>
-                  {TASK_STATUS_LABELS[status]}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              {/* Sort */}
+              <select
+                value={sortKey}
+                onChange={(e) => setSortKey(e.target.value)}
+                className="input-field w-auto text-sm py-1"
+              >
+                {Object.entries(SORT_OPTIONS).map(([key, opt]) => (
+                  <option key={key} value={key}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+
+              {/* Status filter */}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="input-field w-auto text-sm py-1"
+              >
+                <option value="">All</option>
+                {Object.values(TASK_STATUS).map((status) => (
+                  <option key={status} value={status}>
+                    {TASK_STATUS_LABELS[status]}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {loading && <p className="text-gray-500">Loading tasks...</p>}

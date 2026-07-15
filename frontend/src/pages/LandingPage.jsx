@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { CheckCircle, Zap, Shield } from 'lucide-react'
+import { ThemeToggle } from '../components/Common/ThemeToggle'
 
 export function LandingPage() {
   const { isAuthenticated, user } = useAuth()
@@ -12,6 +13,7 @@ export function LandingPage() {
         <div className="container flex items-center justify-between py-4">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">TaskForge</h1>
           <nav className="flex items-center gap-3">
+            <ThemeToggle />
             {isAuthenticated ? (
               <Link to="/dashboard" className="btn-primary btn-sm">
                 Go to Dashboard

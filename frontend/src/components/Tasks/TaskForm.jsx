@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createTask, updateTask } from '../../api/tasks'
 import { TASK_STATUS, TASK_STATUS_LABELS } from '../../utils/constants'
+import { useToast } from '../../context/ToastContext'
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -23,6 +24,7 @@ const emptyValues = { title: '', description: '', status: TASK_STATUS.PENDING, d
 export function TaskForm({ onTaskCreated, editingTask, onTaskUpdated, onCancelEdit }) {
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState(null)
+  const { showToast } = useToast()
 
   const isEditing = Boolean(editingTask)
 
@@ -59,9 +61,11 @@ export function TaskForm({ onTaskCreated, editingTask, onTaskUpdated, onCancelEd
       if (isEditing) {
         const updated = await updateTask(editingTask._id, payload)
         onTaskUpdated(updated)
+        showToast(`"${updated.title}" updated`)
       } else {
         const task = await createTask(payload)
         onTaskCreated(task)
+        showToast(`"${task.title}" created`)
       }
       reset(emptyValues)
     } catch (error) {

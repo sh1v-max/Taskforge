@@ -1,30 +1,36 @@
 import { useState } from 'react'
 import { updateTask, deleteTask } from '../../api/tasks'
 import { TASK_STATUS, TASK_STATUS_LABELS, TASK_STATUS_COLORS } from '../../utils/constants'
+import { useToast } from '../../context/ToastContext'
+import { ConfirmDialog } from '../Common/ConfirmDialog'
 
 export function TaskCard({ task, onTaskUpdated, onTaskDeleted, onEdit }) {
   const [busy, setBusy] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const { showToast } = useToast()
 
   const handleStatusChange = async (e) => {
     try {
       setBusy(true)
       const updated = await updateTask(task._id, { status: e.target.value })
       onTaskUpdated(updated)
+      showToast(`"${task.title}" moved to ${TASK_STATUS_LABELS[updated.status]}`)
     } catch (error) {
-      alert(error.error || 'Failed to update task')
+      showToast(error.error || 'Failed to update task', 'error')
     } finally {
       setBusy(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!confirm(`Delete "${task.title}"?`)) return
     try {
       setBusy(true)
+      setConfirmOpen(false)
       await deleteTask(task._id)
       onTaskDeleted(task._id)
+      showToast(`"${task.title}" deleted`)
     } catch (error) {
-      alert(error.error || 'Failed to delete task')
+      showToast(error.error || 'Failed to delete task', 'error')
       setBusy(false)
     }
   }
@@ -53,7 +59,7 @@ export function TaskCard({ task, onTaskUpdated, onTaskDeleted, onEdit }) {
         )}
       </div>
 
-      {/* Right: status select + delete */}
+      {/* Right: status select + edit + delete */}
       <div className="flex items-center gap-2 shrink-0">
         <select
           value={task.status}
@@ -70,10 +76,19 @@ export function TaskCard({ task, onTaskUpdated, onTaskDeleted, onEdit }) {
         <button onClick={() => onEdit(task)} disabled={busy} className="btn-secondary btn-sm">
           Edit
         </button>
-        <button onClick={handleDelete} disabled={busy} className="btn-danger btn-sm">
+        <button onClick={() => setConfirmOpen(true)} disabled={busy} className="btn-danger btn-sm">
           Delete
         </button>
       </div>
+
+      {/* Delete confirmation modal */}
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete task?"
+        message={`"${task.title}" will be permanently deleted. This cannot be undone.`}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </div>
   )
 }
