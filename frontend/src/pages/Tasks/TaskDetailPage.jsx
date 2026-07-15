@@ -94,7 +94,7 @@ export function TaskDetailPage() {
           <>
             {/* Title + status */}
             <div className="flex items-start justify-between gap-4">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words min-w-0">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white wrap-break-word min-w-0">
                 {task.title}
               </h2>
               <span
