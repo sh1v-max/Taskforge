@@ -106,8 +106,8 @@ export function TaskForm({ onTaskCreated, editingTask, onTaskUpdated, onCancelEd
         />
       </div>
 
-      {/* Status + Due Date side by side */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Status + Due Date: stacked on phones, side by side from sm: up */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="label">Status</label>
           <select className="input-field" {...register('status')} disabled={submitting}>

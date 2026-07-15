@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { updateTask, deleteTask } from '../../api/tasks'
 import { TASK_STATUS, TASK_STATUS_LABELS, TASK_STATUS_COLORS } from '../../utils/constants'
 import { useToast } from '../../context/ToastContext'
@@ -35,13 +36,17 @@ export function TaskCard({ task, onTaskUpdated, onTaskDeleted, onEdit }) {
     }
   }
 
+  // Card stacks vertically on phones, side-by-side from sm: up
   return (
-    <div className="card p-4 flex items-start justify-between gap-4">
+    <div className="card p-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
       {/* Left: title, description, due date */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <h4 className="font-medium text-gray-900 dark:text-white truncate">
-            {task.title}
+            {/* Title links to the full task detail page */}
+            <Link to={`/tasks/${task._id}`} className="hover:underline">
+              {task.title}
+            </Link>
           </h4>
           <span className={`text-xs px-2 py-0.5 rounded-full ${TASK_STATUS_COLORS[task.status]}`}>
             {TASK_STATUS_LABELS[task.status]}
@@ -60,7 +65,7 @@ export function TaskCard({ task, onTaskUpdated, onTaskDeleted, onEdit }) {
       </div>
 
       {/* Right: status select + edit + delete */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-2 shrink-0 flex-wrap">
         <select
           value={task.status}
           onChange={handleStatusChange}

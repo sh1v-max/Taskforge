@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { getTasks } from '../../api/tasks'
 import { TaskForm } from '../../components/Tasks/TaskForm'
 import { TaskCard } from '../../components/Tasks/TaskCard'
@@ -11,6 +11,17 @@ import { Pagination } from '../../components/Common/Pagination'
 export function Dashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // The task detail page's "Edit" button navigates here with the task in
+  // router state — preload it into the edit form, then clear the state so
+  // a page refresh doesn't reopen edit mode
+  useEffect(() => {
+    if (location.state?.editTask) {
+      setEditingTask(location.state.editTask)
+      navigate('.', { replace: true, state: null })
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
@@ -74,13 +85,13 @@ export function Dashboard() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <header className="bg-white dark:bg-slate-900 shadow-sm">
-        <div className="container flex items-center justify-between py-4">
+        <div className="container flex items-center justify-between gap-2 py-4">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">TaskForge</h1>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <ThemeToggle />
             <Link
               to="/profile"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:underline"
+              className="text-sm text-gray-600 dark:text-gray-400 hover:underline truncate max-w-24 sm:max-w-none"
             >
               {user?.name}
             </Link>
@@ -105,12 +116,13 @@ export function Dashboard() {
 
         {/* Right: task list */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
+          {/* Toolbar stacks below the heading on phones */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white">
               Your Tasks {!loading && `(${total})`}
             </h2>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               {/* Sort */}
               <select
                 value={sortKey}
@@ -118,7 +130,7 @@ export function Dashboard() {
                   setSortKey(e.target.value)
                   setPage(PAGINATION.DEFAULT_PAGE) // new ordering → back to page 1
                 }}
-                className="input-field w-auto text-sm py-1"
+                className="input-field flex-1 sm:flex-none w-auto text-sm py-1"
               >
                 {Object.entries(SORT_OPTIONS).map(([key, opt]) => (
                   <option key={key} value={key}>
@@ -134,7 +146,7 @@ export function Dashboard() {
                   setStatusFilter(e.target.value)
                   setPage(PAGINATION.DEFAULT_PAGE) // new filter → back to page 1
                 }}
-                className="input-field w-auto text-sm py-1"
+                className="input-field flex-1 sm:flex-none w-auto text-sm py-1"
               >
                 <option value="">All</option>
                 {Object.values(TASK_STATUS).map((status) => (

@@ -33,8 +33,9 @@ export function Pagination({ page, limit, total, onChange }) {
   const pages = []
   for (let p = start; p <= end; p++) pages.push(p)
 
+  // Info text on top, controls below on phones; one row from sm: up
   return (
-    <div className="flex items-center justify-between pt-2">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
       {/* Info text: "Showing 11-20 of 23" */}
       <p className="text-sm text-gray-500 dark:text-gray-400">
         Showing {from}-{to} of {total}
