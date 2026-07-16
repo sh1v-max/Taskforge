@@ -8,20 +8,31 @@ const options = {
       version: '1.0.0',
       description: 'A comprehensive task management API with JWT authentication, role-based access control, filtering, sorting, and pagination. Built with Express.js and MongoDB.',
       contact: {
-        name: 'TaskForge Team',
-        email: 'support@taskforge.com',
+        name: 'Shiv',
+        url: 'https://github.com/sh1v-max/Taskforge',
       },
     },
-    servers: [
-      {
-        url: 'http://localhost:5000',
-        description: 'Development server',
-      },
-      {
-        url: 'https://api.taskforge.com',
-        description: 'Production server',
-      },
-    ],
+    // Order matters: Swagger UI's "Try it out" uses the FIRST entry by
+    // default. In production we list the live URL first, locally we
+    // list localhost first.
+    servers:
+      process.env.NODE_ENV === 'production'
+        ? [
+            {
+              url: 'https://taskforge-api-e2g9.onrender.com',
+              description: 'Production server (Render)',
+            },
+          ]
+        : [
+            {
+              url: 'http://localhost:5000',
+              description: 'Development server',
+            },
+            {
+              url: 'https://taskforge-api-e2g9.onrender.com',
+              description: 'Production server (Render)',
+            },
+          ],
     components: {
       securitySchemes: {
         bearerAuth: {
