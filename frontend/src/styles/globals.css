@@ -90,6 +90,15 @@ body {
   @apply flex items-center justify-center;
 }
 
+/* Scrollable without showing a scrollbar (filter pills, chip rows) */
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* old Edge/IE */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
 .error-text {
   @apply text-red-600 dark:text-red-400 text-sm;
 }

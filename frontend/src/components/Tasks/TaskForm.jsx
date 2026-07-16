@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { createTask, updateTask } from '../../api/tasks'
 import { TASK_STATUS, TASK_STATUS_LABELS } from '../../utils/constants'
 import { useToast } from '../../context/ToastContext'
+import { Plus, PencilLine } from 'lucide-react'
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -76,10 +77,18 @@ export function TaskForm({ onTaskCreated, editingTask, onTaskUpdated, onCancelEd
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="card p-6 space-y-4">
-      <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-        {isEditing ? `Edit: ${editingTask.title}` : 'New Task'}
-      </h3>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4"
+    >
+      <div className="flex items-center gap-2.5">
+        <span className={`flex-center w-9 h-9 rounded-lg ${isEditing ? 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400'}`}>
+          {isEditing ? <PencilLine size={18} /> : <Plus size={18} />}
+        </span>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate">
+          {isEditing ? `Edit: ${editingTask.title}` : 'New Task'}
+        </h3>
+      </div>
 
       {/* Title */}
       <div>
