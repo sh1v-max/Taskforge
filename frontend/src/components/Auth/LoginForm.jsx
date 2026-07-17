@@ -5,6 +5,7 @@ import { useAuthService } from '../../hooks/useAuthService'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { PATTERNS } from '../../utils/constants'
+import { PasswordInput } from '../Common/PasswordInput'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -47,10 +48,8 @@ export function LoginForm() {
       {/* Password Field */}
       <div>
         <label className="label">Password</label>
-        <input
-          type="password"
+        <PasswordInput
           placeholder="••••••••"
-          className="input-field"
           {...register('password')}
           disabled={isLoading}
         />

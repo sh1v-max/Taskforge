@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 import { getMe, updateProfile } from '../../api/auth'
 import { ThemeToggle } from '../../components/Common/ThemeToggle'
+import { PasswordInput } from '../../components/Common/PasswordInput'
 
 export function ProfilePage() {
   const { user, setUser } = useAuth()
@@ -127,9 +128,7 @@ export function ProfilePage() {
           <h3 className="font-bold text-gray-900 dark:text-white">Change Password</h3>
           <div>
             <label className="label">Current Password</label>
-            <input
-              type="password"
-              className="input-field"
+            <PasswordInput
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               disabled={savingPassword}
@@ -138,9 +137,7 @@ export function ProfilePage() {
           </div>
           <div>
             <label className="label">New Password</label>
-            <input
-              type="password"
-              className="input-field"
+            <PasswordInput
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               disabled={savingPassword}

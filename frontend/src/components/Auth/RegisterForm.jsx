@@ -5,6 +5,7 @@ import { useAuthService } from '../../hooks/useAuthService'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { PATTERNS } from '../../utils/constants'
+import { PasswordInput } from '../Common/PasswordInput'
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -70,10 +71,8 @@ export function RegisterForm() {
       {/* Password Field */}
       <div>
         <label className="label">Password</label>
-        <input
-          type="password"
+        <PasswordInput
           placeholder="••••••••"
-          className="input-field"
           {...register('password')}
           disabled={isLoading}
         />
@@ -86,10 +85,8 @@ export function RegisterForm() {
       {/* Confirm Password Field */}
       <div>
         <label className="label">Confirm Password</label>
-        <input
-          type="password"
+        <PasswordInput
           placeholder="••••••••"
-          className="input-field"
           {...register('confirmPassword')}
           disabled={isLoading}
         />
