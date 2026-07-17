@@ -1,325 +1,193 @@
-# TaskForge - Full-Stack Application
+# TaskForge — Full-Stack Task Manager
 
-> A complete full-stack task management application built with Node.js/Express backend and React frontend.
+> A complete, deployed full-stack task management application: Express + MongoDB REST API, React frontend, and a CI/CD pipeline that ships every push.
 
-**Status:** 🚀 Production Ready  
-**Backend:** ✅ Complete (API with all features)  
-**Frontend:** ⏳ In Development  
+**Status:** 🚀 Live in Production
 
----
+## 🔗 Live Links
 
-## 📂 Monorepo Structure
+| | URL |
+|---|---|
+| **App (frontend)** | https://taskforge-eight-xi.vercel.app |
+| **API (backend)** | https://taskforge-api-e2g9.onrender.com |
+| **API Docs (Swagger)** | https://taskforge-api-e2g9.onrender.com/api/docs |
+| **Source** | https://github.com/sh1v-max/Taskforge |
 
-```
-TaskForge/
-├── backend/                    # Express.js REST API
-│   ├── src/
-│   ├── package.json
-│   ├── server.js
-│   ├── .env
-│   ├── README.md              # Backend README
-│   └── overview.md            # Backend technical docs
-│
-├── frontend/                   # React web application
-│   ├── src/
-│   ├── public/
-│   ├── package.json
-│   ├── .env
-│   ├── README.md              # Frontend README
-│   └── FRONTEND_PLAN.md       # Frontend development plan
-│
-├── DOCS.md                     # Documentation index
-├── QUICK-REFERENCE.md         # Quick commands & APIs
-├── FRONTEND_PLAN.md           # Frontend implementation plan
-├── README.md                   # This file (monorepo overview)
-└── .gitignore                 # Git ignore rules
-```
+> ⚠️ Free-tier note: the API sleeps after 15 minutes of inactivity — the first request (e.g. login) can take ~30–50 seconds to wake it up.
 
 ---
 
 ## 🎯 What is TaskForge?
 
-TaskForge is a modern task management application that allows users to:
+TaskForge lets users:
 
-- ✅ Register and login securely
-- ✅ Create, read, update, delete tasks
-- ✅ Filter tasks by status
-- ✅ Sort tasks by date
-- ✅ Paginate through results
-- ✅ Manage user profile
-- ✅ Use in dark mode
+- ✅ Register and log in securely (JWT authentication)
+- ✅ Create, view, edit, and delete tasks
+- ✅ Track status: pending → in progress → completed
+- ✅ Filter by status, sort by date/title, paginate through results
+- ✅ See dashboard stats with overall progress
+- ✅ Manage their profile (name, password)
+- ✅ Use light or dark mode — remembered across visits
+- ✅ Enjoy a fully responsive UI on any device
 
 ---
 
 ## 🏗️ Architecture
 
-### Backend (Express.js + MongoDB)
-- **Framework:** Express.js 5.0
-- **Database:** MongoDB with Mongoose
-- **Authentication:** JWT with bcryptjs password hashing
-- **Validation:** Multi-layer (Zod + Mongoose)
-- **API Docs:** Swagger/OpenAPI at `/api/docs`
-- **Status:** ✅ Production Ready (All 12 tests passing)
+```
+git push → GitHub
+  ├─ GitHub Actions  → CI: lint, syntax check, production build
+  ├─ Render          → auto-deploys backend   (health-checked at /health)
+  └─ Vercel          → auto-deploys frontend  (SPA rewrites via vercel.json)
+                              ↓
+                        MongoDB Atlas
+```
 
-**Key Features:**
-- 7 REST API endpoints
-- Global error handling middleware
-- Async error handler wrapper
-- Rate limiting (100 req/15min)
-- CORS & Security headers
-- Complete test suite (12 tests)
+### Backend (`backend/`)
+- **Express 5** REST API, MVC structure (routes → middleware → controllers → models)
+- **MongoDB + Mongoose** with ownership checks on every task query
+- **JWT auth** (jsonwebtoken) with bcryptjs password hashing
+- **Zod validation** on every request body and query string
+- **Security:** Helmet headers, CORS locked to the frontend origin, per-IP rate limiting (100 req/15 min, `trust proxy` aware)
+- **Swagger/OpenAPI** docs generated from JSDoc comments at `/api/docs`
 
-See [backend/README.md](backend/README.md) and [backend/overview.md](backend/overview.md) for details.
-
----
-
-### Frontend (React + Tailwind CSS)
-- **Framework:** React 18
-- **Styling:** Tailwind CSS
-- **Routing:** React Router v6
-- **State:** Context API + useReducer
-- **Forms:** React Hook Form + Zod
-- **HTTP:** Axios with JWT interceptors
-- **Status:** ⏳ In Development
-
-**Planned Features:**
-- Authentication pages (register, login)
-- Task management dashboard
-- CRUD operations UI
-- Filtering & sorting
-- User profile page
-- Dark mode
-- Responsive design
-
-See [FRONTEND_PLAN.md](FRONTEND_PLAN.md) for the complete development plan.
+### Frontend (`frontend/`)
+- **React 18 + Vite** with React Router v6 (protected routes)
+- **Tailwind CSS v4** with class-based dark mode
+- **Context API + useReducer** for auth, theme, and toast state
+- **React Hook Form + Zod** for form validation
+- **Axios** client with interceptors: auto-attaches the JWT, auto-logs out on 401
+- Server-side pagination, filtering, and sorting wired to the API
 
 ---
 
-## 🚀 Getting Started
+## 📂 Repository Structure
+
+```
+TaskForge/
+├── backend/                # Express.js REST API
+│   ├── src/
+│   │   ├── routes/         # Endpoint definitions (+ Swagger docs)
+│   │   ├── controllers/    # Business logic
+│   │   ├── models/         # Mongoose schemas
+│   │   ├── middleware/     # Auth, validation, error handling
+│   │   ├── schemas/        # Zod validation schemas
+│   │   └── config/         # Swagger setup
+│   └── server.js           # Entry point
+│
+├── frontend/               # React application
+│   └── src/
+│       ├── api/            # Axios client + API services
+│       ├── components/     # Reusable UI (tasks, auth, common)
+│       ├── context/        # Auth, Theme, Toast providers
+│       ├── pages/          # Landing, auth, dashboard, profile, task detail
+│       └── utils/          # Constants and helpers
+│
+├── .github/workflows/      # CI pipeline (lint + build on every push/PR)
+├── render.yaml             # Render blueprint (backend infra as code)
+└── README.md               # You are here
+```
+
+---
+
+## 🚀 Running Locally
 
 ### Prerequisites
 - Node.js 18+
-- MongoDB running locally or MongoDB Atlas
-- npm or yarn
+- A MongoDB database (local or free [Atlas](https://www.mongodb.com/atlas) cluster)
 
-### Quick Setup
+### 1. Clone
 
-**1. Clone the repository**
 ```bash
-git clone https://github.com/sh1v-max/TaskforgeAPI.git
-cd TaskforgeAPI
+git clone https://github.com/sh1v-max/Taskforge.git
+cd Taskforge
 ```
 
-**2. Setup Backend**
+### 2. Backend
+
 ```bash
 cd backend
-cp .env.example .env
-# Edit .env with your MongoDB URI and JWT secret
+cp .env.example .env   # fill in MONGO_URI and JWT_SECRET
 npm install
-npm run dev
+npm run dev            # http://localhost:5000
 ```
 
-The API will run on `http://localhost:5000`
+### 3. Frontend
 
-**3. Setup Frontend** (Coming soon)
 ```bash
 cd ../frontend
-cp .env.example .env
+cp .env.example .env   # defaults point at http://localhost:5000
 npm install
-npm run dev
+npm run dev            # http://localhost:5173
 ```
 
-The frontend will run on `http://localhost:3000`
+Open http://localhost:5173, register an account, and start forging.
 
 ---
 
-## 📚 Documentation
+## 🔌 API Overview
 
-### For Developers
+Full interactive docs (with "Try it out"): **[/api/docs](https://taskforge-api-e2g9.onrender.com/api/docs)**
 
-- **[DOCS.md](DOCS.md)** - Documentation index (start here for navigation)
-- **[QUICK-REFERENCE.md](QUICK-REFERENCE.md)** - Quick commands, endpoints, error codes
-- **[FRONTEND_PLAN.md](FRONTEND_PLAN.md)** - Complete frontend development roadmap
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/auth/register` | — | Create account, returns JWT |
+| POST | `/api/auth/login` | — | Log in, returns JWT |
+| GET | `/api/auth/me` | 🔒 | Current user's profile |
+| PUT | `/api/auth/me` | 🔒 | Update name / change password |
+| POST | `/api/tasks` | 🔒 | Create task |
+| GET | `/api/tasks` | 🔒 | List tasks — supports `?status=`, `?sortBy=field:direction`, `?page=`, `?limit=` |
+| GET | `/api/tasks/:id` | 🔒 | Get one task |
+| PUT | `/api/tasks/:id` | 🔒 | Update task |
+| DELETE | `/api/tasks/:id` | 🔒 | Delete task |
+| GET | `/health` | — | Uptime check (unthrottled) |
 
-### Backend Documentation
-
-- **[backend/README.md](backend/README.md)** - Backend setup and overview
-- **[backend/overview.md](backend/overview.md)** - Complete technical reference
-- **[backend/swagger_overview.md](backend/swagger_overview.md)** - Swagger/OpenAPI guide
-- **[backend/POSTMAN-SETUP-GUIDE.md](backend/POSTMAN-SETUP-GUIDE.md)** - API testing guide
-
-### Frontend Documentation
-
-- **[FRONTEND_PLAN.md](FRONTEND_PLAN.md)** - Implementation roadmap
-- Frontend README (coming soon)
-
----
-
-## 🔗 API Documentation
-
-Once the backend is running, access interactive API documentation:
-
-```
-http://localhost:5000/api/docs
-```
-
-This provides:
-- ✅ All endpoints listed and documented
-- ✅ Request/response examples
-- ✅ "Try it out" feature for testing
-- ✅ Authentication with JWT tokens
-- ✅ Error code reference
+🔒 = requires `Authorization: Bearer <token>` header. Users can only ever see and modify their own tasks.
 
 ---
 
-## 🧪 Testing the API
+## ⚙️ CI/CD
 
-### Option 1: Swagger UI (Recommended)
-```
-http://localhost:5000/api/docs
-```
-- No installation needed
-- Browser-based testing
-- Beautiful interactive documentation
+Every push to `main`:
 
-### Option 2: Postman Collection
-```bash
-# Import this file into Postman:
-backend/TaskForge-API-Collection.postman_collection.json
-```
+1. **GitHub Actions** ([ci.yml](.github/workflows/ci.yml)) runs two parallel jobs — backend dependency install + syntax check of every source file; frontend install + oxlint + production build
+2. **Render** auto-deploys the backend (configured via [render.yaml](render.yaml))
+3. **Vercel** auto-deploys the frontend (root directory `frontend`, `VITE_API_URL` injected at build time)
 
-### Option 3: Automated Test Suite
-```bash
-cd backend
-npm test
-```
-
-Runs 12 automated tests covering all API endpoints.
+Environment configuration lives outside the code: local `.env` files for development, platform dashboards for production.
 
 ---
 
-## 🎨 Technology Choices
+## 📚 More Documentation
 
-### Why This Stack?
-
-**Backend:**
-- Express.js: Popular, lightweight, large ecosystem
-- MongoDB: Flexible schema, scalable, NoSQL
-- JWT: Stateless auth, works across domains
-- Zod: Type-safe validation, same as frontend
-
-**Frontend:**
-- React: Most popular, component-based, large ecosystem
-- Tailwind: Utility-first, responsive, dark mode built-in
-- Context API: Simple state, no extra dependencies
-- React Hook Form: Performance, minimal re-renders
+- [DOCS.md](DOCS.md) — documentation index
+- [QUICK-REFERENCE.md](QUICK-REFERENCE.md) — quick commands, endpoints, error codes
+- [backend/overview.md](backend/overview.md) — deep technical reference for the API
+- [backend/POSTMAN-SETUP-GUIDE.md](backend/POSTMAN-SETUP-GUIDE.md) — testing with Postman
+- [FRONTEND_PLAN.md](FRONTEND_PLAN.md) — the original frontend build plan
 
 ---
 
-## 📊 Project Status
+## 🗺️ Roadmap
 
-### ✅ Completed
-
-**Backend (Steps 1-20):**
-- [x] Project setup and configuration
-- [x] User authentication (register, login, JWT)
-- [x] Task CRUD operations
-- [x] Advanced querying (filter, sort, paginate)
-- [x] Input validation (Zod + Mongoose)
-- [x] Error handling middleware
-- [x] Security headers (CORS, Helmet, rate limiting)
-- [x] Swagger/OpenAPI documentation
-- [x] Automated test suite (12/12 passing)
-- [x] Production-ready code
-
-**Documentation:**
-- [x] Backend README
-- [x] Technical overview
-- [x] Swagger guide
-- [x] Postman collection
-- [x] API reference
-- [x] Frontend development plan
-
-### ⏳ In Progress
-
-**Frontend:**
-- [ ] React app initialization
-- [ ] Authentication pages
-- [ ] Task management UI
-- [ ] Styling and responsive design
-- [ ] API integration
-- [ ] Testing
-
----
-
-## 🤝 Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) (coming soon) for contribution guidelines.
-
-**Current Development:**
-- Frontend implementation following [FRONTEND_PLAN.md](FRONTEND_PLAN.md)
-- Expected completion: 40-60 hours of development
-
----
-
-## 📈 Performance & Quality
-
-### Backend Metrics
-- ✅ All 12 tests passing
-- ✅ Response time: < 100ms avg
-- ✅ Security: 6-layer protection
-- ✅ Uptime: 99.9% (production)
-- ✅ Rate limiting: 100 req/15min per IP
-
-### Frontend Targets (In Development)
-- ⏳ Lighthouse score: 90+
-- ⏳ First Contentful Paint: < 1.5s
-- ⏳ Cumulative Layout Shift: < 0.1
-- ⏳ Accessibility: 100% WCAG compliance
-
----
-
-## 🚀 Deployment
-
-### Backend
-Deploy to: Heroku, Railway, AWS, or any Node.js hosting
-
-See [backend/README.md#deployment](backend/README.md#-deployment) for instructions.
-
-### Frontend
-Deploy to: Vercel, Netlify, or any static hosting
-
-See FRONTEND_PLAN.md for deployment options.
-
----
-
-## 📞 Support
-
-- **Questions about the project?** See [DOCS.md](DOCS.md)
-- **Quick lookup needed?** Check [QUICK-REFERENCE.md](QUICK-REFERENCE.md)
-- **Backend details?** Read [backend/overview.md](backend/overview.md)
-- **Frontend plan?** Review [FRONTEND_PLAN.md](FRONTEND_PLAN.md)
-
----
-
-## 📄 License
-
-MIT License - See LICENSE file for details
+- [ ] Automated test suite (Jest + Supertest) wired into CI
+- [ ] Task search
+- [ ] Tags / priority levels
+- [ ] Password reset via email
+- [ ] Admin dashboard (role-based)
 
 ---
 
 ## 👨‍💻 Author
 
-Built as a comprehensive full-stack learning project demonstrating professional backend and frontend development practices.
+**Shiv** — [github.com/sh1v-max](https://github.com/sh1v-max)
+
+Built as a full-stack learning project: every layer hand-written and understood, from Mongoose ownership queries to CORS behind a reverse proxy.
 
 ---
 
 <div align="center">
 
-**Backend:** ✅ Production Ready  
-**Frontend:** ⏳ In Development  
-**Overall:** 🚀 Making Progress!
-
-[Backend Repo](backend/) · [Frontend Plan](FRONTEND_PLAN.md) · [API Docs](http://localhost:5000/api/docs) · [Quick Ref](QUICK-REFERENCE.md)
+**[Try the live app →](https://taskforge-eight-xi.vercel.app)**
 
 </div>
