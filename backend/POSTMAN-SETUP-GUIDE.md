@@ -496,8 +496,7 @@ After testing with Postman:
 ## 📞 Need Help?
 
 - **Postman Docs:** https://learning.postman.com/docs/getting-started/introduction/
-- **API Docs:** Check `swagger_overview.md` for detailed API info
-- **Server Issues:** Check `overview.md` → Troubleshooting section
+- **API Docs:** Swagger UI at `/api/docs` on the running server
 
 ---
 

@@ -1,6 +1,7 @@
 import { useAuth } from '../context/AuthContext'
 import client from '../api/client'
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../utils/constants'
+import { getErrorMessage } from '../utils/getErrorMessage'
 
 export function useAuthService() {
   const { login, setError, setLoading, clearError } = useAuth()
@@ -21,7 +22,7 @@ export function useAuthService() {
         return { success: true, message: 'Registration successful!' }
       }
     } catch (error) {
-      const errorMsg = error.errors?.[0] || error.message || ERROR_MESSAGES.UNKNOWN_ERROR
+      const errorMsg = getErrorMessage(error, ERROR_MESSAGES.UNKNOWN_ERROR)
       setError(errorMsg)
       return { success: false, message: errorMsg }
     } finally {
@@ -44,7 +45,7 @@ export function useAuthService() {
         return { success: true, message: SUCCESS_MESSAGES.LOGIN_SUCCESS }
       }
     } catch (error) {
-      const errorMsg = error.errors?.[0] || error.message || ERROR_MESSAGES.INVALID_CREDENTIALS
+      const errorMsg = getErrorMessage(error, ERROR_MESSAGES.INVALID_CREDENTIALS)
       setError(errorMsg)
       return { success: false, message: errorMsg }
     } finally {

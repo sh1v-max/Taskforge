@@ -1,7 +1,7 @@
 # CI pipeline — runs on every push and pull request to main.
 #
 # Two independent jobs (they run in parallel):
-#   backend  → install deps + syntax-check every JS file
+#   backend  → install deps + run the Vitest/Supertest suite
 #   frontend → install deps + lint + production build
 #
 # Deployment (CD) is handled by the platforms themselves:
@@ -38,12 +38,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # node --check parses each file without executing it —
-      # catches syntax errors without needing a database connection
-      - name: Syntax check all source files
-        run: |
-          node --check server.js
-          find src -name "*.js" -print0 | xargs -0 -n1 node --check
+      # Integration tests against a real MongoDB running in memory,
+      # so CI needs no database or secrets
+      - name: Run tests
+        run: npm test
 
   frontend:
     name: Frontend checks

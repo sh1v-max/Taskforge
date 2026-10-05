@@ -60,6 +60,7 @@ backend/
 │   └── utils/
 │       ├── db.js              # MongoDB connection helper
 │       └── generateToken.js   # JWT signing helper
+├── tests/                     # Vitest + Supertest integration tests
 └── TaskForge-API-Collection.postman_collection.json
 ```
 
@@ -138,7 +139,7 @@ Interactive documentation with "try it out" support is available at **`/api/docs
 | Param    | Description                                       | Example              |
 | -------- | ------------------------------------------------- | -------------------- |
 | `status` | Filter by status: `pending`, `in-progress`, `completed` | `?status=pending` |
-| `sortBy` | Field to sort by (prefix with `-` for descending) | `?sortBy=-createdAt` |
+| `sortBy` | `createdAt`, `dueDate`, `title` or `status`, then `:asc`/`:desc` | `?sortBy=dueDate:asc` |
 | `page`   | Page number for pagination                        | `?page=2`            |
 | `limit`  | Results per page                                  | `?limit=10`          |
 
@@ -195,14 +196,11 @@ curl "http://localhost:5000/api/tasks?status=pending&sortBy=-createdAt&page=1&li
 
 - **Swagger UI** — `http://localhost:5000/api/docs` (browser-based, no setup)
 - **Postman** — import `TaskForge-API-Collection.postman_collection.json`; see [POSTMAN-SETUP-GUIDE.md](POSTMAN-SETUP-GUIDE.md)
-- **Test script** — `node test-api.js` runs the automated endpoint tests (see [TESTING-GUIDE.md](TESTING-GUIDE.md))
+- **Automated tests** — `npm test` runs the Vitest + Supertest suite against an in-memory MongoDB (no `.env` needed)
 
 ---
 
 ## 📚 Additional Documentation
 
-- [overview.md](overview.md) — complete technical reference
-- [swagger_overview.md](swagger_overview.md) — Swagger/OpenAPI guide
 - [POSTMAN-SETUP-GUIDE.md](POSTMAN-SETUP-GUIDE.md) — Postman testing walkthrough
-- [TESTING-GUIDE.md](TESTING-GUIDE.md) — testing guide
-- Per-folder READMEs inside `src/` explain each layer (routes, controllers, models, middleware, schemas, utils)
+- Interactive API docs (Swagger UI) at `/api/docs`

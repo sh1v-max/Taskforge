@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createTask, updateTask } from '../../api/tasks'
 import { TASK_STATUS, TASK_STATUS_LABELS } from '../../utils/constants'
+import { getErrorMessage } from '../../utils/getErrorMessage'
 import { useToast } from '../../context/ToastContext'
 import { Plus, PencilLine } from 'lucide-react'
 
@@ -70,7 +71,7 @@ export function TaskForm({ onTaskCreated, editingTask, onTaskUpdated, onCancelEd
       }
       reset(emptyValues)
     } catch (error) {
-      setServerError(error.errors?.[0] || error.error || 'Failed to save task')
+      setServerError(getErrorMessage(error, 'Failed to save task'))
     } finally {
       setSubmitting(false)
     }

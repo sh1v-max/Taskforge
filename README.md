@@ -1,5 +1,7 @@
 # TaskForge — Full-Stack Task Manager
 
+[![CI](https://github.com/sh1v-max/Taskforge/actions/workflows/ci.yml/badge.svg)](https://github.com/sh1v-max/Taskforge/actions/workflows/ci.yml)
+
 > A complete, deployed full-stack task management application: Express + MongoDB REST API, React frontend, and a CI/CD pipeline that ships every push.
 
 **Status:** 🚀 Live in Production
@@ -73,6 +75,7 @@ TaskForge/
 │   │   ├── middleware/     # Auth, validation, error handling
 │   │   ├── schemas/        # Zod validation schemas
 │   │   └── config/         # Swagger setup
+│   ├── tests/              # Vitest + Supertest integration tests
 │   └── server.js           # Entry point
 │
 ├── frontend/               # React application
@@ -83,7 +86,7 @@ TaskForge/
 │       ├── pages/          # Landing, auth, dashboard, profile, task detail
 │       └── utils/          # Constants and helpers
 │
-├── .github/workflows/      # CI pipeline (lint + build on every push/PR)
+├── .github/workflows/      # CI pipeline (tests, lint, build on every push/PR)
 ├── render.yaml             # Render blueprint (backend infra as code)
 └── README.md               # You are here
 ```
@@ -150,7 +153,7 @@ Full interactive docs (with "Try it out"): **[/api/docs](https://taskforge-api-e
 
 Every push to `main`:
 
-1. **GitHub Actions** ([ci.yml](.github/workflows/ci.yml)) runs two parallel jobs — backend dependency install + syntax check of every source file; frontend install + oxlint + production build
+1. **GitHub Actions** ([ci.yml](.github/workflows/ci.yml)) runs two parallel jobs — backend install + the integration test suite; frontend install + oxlint + production build
 2. **Render** auto-deploys the backend (configured via [render.yaml](render.yaml))
 3. **Vercel** auto-deploys the frontend (root directory `frontend`, `VITE_API_URL` injected at build time)
 
@@ -158,19 +161,25 @@ Environment configuration lives outside the code: local `.env` files for develop
 
 ---
 
+## 🧪 Testing
+
+`cd backend && npm test` runs the integration suite: Vitest and Supertest against a real MongoDB running in memory (mongodb-memory-server), so it needs no database or `.env`. CI runs it on every push.
+
+- **Auth** — registration hashes passwords with bcrypt and never returns them, duplicate emails are rejected, emails are normalised, every invalid field is reported by name, wrong password and unknown email get the same response, forged tokens are rejected, a password change requires the current password.
+- **Tasks** — create with defaults and trimming, a `user` id in the body is ignored, validation errors name the field, filtering, an allow-listed `sortBy`, paging limits, full read/update/delete, users get 404 on each other's tasks, malformed ids return 400 instead of crashing.
+
+---
+
 ## 📚 More Documentation
 
-- [DOCS.md](DOCS.md) — documentation index
-- [QUICK-REFERENCE.md](QUICK-REFERENCE.md) — quick commands, endpoints, error codes
-- [backend/overview.md](backend/overview.md) — deep technical reference for the API
-- [backend/POSTMAN-SETUP-GUIDE.md](backend/POSTMAN-SETUP-GUIDE.md) — testing with Postman
-- [FRONTEND_PLAN.md](FRONTEND_PLAN.md) — the original frontend build plan
+- [backend/README.md](backend/README.md) — API reference, environment variables, security
+- [backend/POSTMAN-SETUP-GUIDE.md](backend/POSTMAN-SETUP-GUIDE.md) — manual testing with Postman
 
 ---
 
 ## 🗺️ Roadmap
 
-- [ ] Automated test suite (Jest + Supertest) wired into CI
+- [x] Automated integration tests (Vitest + Supertest) wired into CI
 - [ ] Task search
 - [ ] Tags / priority levels
 - [ ] Password reset via email

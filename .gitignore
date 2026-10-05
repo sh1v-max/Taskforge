@@ -72,3 +72,26 @@ frontend/.env.local
 .DS_Store
 .vscode/
 .idea/
+
+# AI tool files
+.claude/
+CLAUDE.md
+*.tmp.*
+.history/
+
+# Personal notes, plans and superseded test scripts (kept locally, not part of the project)
+DOCS.md
+QUICK-REFERENCE.md
+FRONTEND_PLAN.md
+TaskForge-API-Collection.json
+backend/overview.md
+backend/swagger_overview.md
+backend/base_implemented.md
+backend/project-artifact.md
+backend/taskforge_api_analysis.md
+backend/20_steps_learning_plan.md
+backend/TESTING-GUIDE.md
+backend/test.md
+backend/test_action.md
+backend/test-api.js
+backend/src/**/README.md

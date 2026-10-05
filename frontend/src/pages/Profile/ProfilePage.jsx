@@ -6,6 +6,7 @@ import { useToast } from '../../context/ToastContext'
 import { getMe, updateProfile } from '../../api/auth'
 import { ThemeToggle } from '../../components/Common/ThemeToggle'
 import { PasswordInput } from '../../components/Common/PasswordInput'
+import { getErrorMessage } from '../../utils/getErrorMessage'
 
 export function ProfilePage() {
   const { user, setUser } = useAuth()
@@ -39,7 +40,7 @@ export function ProfilePage() {
       setUser({ ...user, name: data.user.name }) // Sync AuthContext + localStorage
       showToast('Name updated')
     } catch (error) {
-      showToast(error.message || 'Failed to update name', 'error')
+      showToast(getErrorMessage(error, 'Failed to update name'), 'error')
     } finally {
       setSavingName(false)
     }
@@ -58,7 +59,7 @@ export function ProfilePage() {
       setNewPassword('')
       showToast('Password changed')
     } catch (error) {
-      showToast(error.message || error.errors?.[0] || 'Failed to change password', 'error')
+      showToast(getErrorMessage(error, 'Failed to change password'), 'error')
     } finally {
       setSavingPassword(false)
     }
