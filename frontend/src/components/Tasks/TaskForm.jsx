@@ -55,10 +55,21 @@ export function TaskForm({ onTaskCreated, editingTask, onTaskUpdated, onCancelEd
       setSubmitting(true)
       setServerError(null)
 
-      // Build payload — skip empty optional fields
+      // Build payload
       const payload = { title: data.title, status: data.status }
-      if (data.description) payload.description = data.description
-      if (data.dueDate) payload.dueDate = new Date(data.dueDate).toISOString()
+      const dueDate = data.dueDate ? new Date(data.dueDate).toISOString() : null
+
+      if (isEditing) {
+        // PUT is a partial update: any field we leave out keeps its OLD value.
+        // So when editing, always send description and dueDate. An emptied
+        // field goes as '' / null, which clears it instead of being ignored.
+        payload.description = data.description ?? ''
+        payload.dueDate = dueDate
+      } else {
+        // Creating: skip empty optional fields, the backend fills in defaults
+        if (data.description) payload.description = data.description
+        if (dueDate) payload.dueDate = dueDate
+      }
 
       if (isEditing) {
         const updated = await updateTask(editingTask._id, payload)

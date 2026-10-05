@@ -107,6 +107,31 @@ describe('GET, PUT, DELETE /api/tasks/:id', () => {
     expect((await api().get(`/api/tasks/${task._id}`).set(auth(token))).status).toBe(404)
   })
 
+  it('clears description and due date when sent as empty string and null', async () => {
+    const { body: task } = await createTask({
+      title: 'draft',
+      description: 'some notes',
+      dueDate: '2026-12-01T00:00:00.000Z',
+    })
+
+    // This is what the edit form sends when the user empties both fields
+    const res = await api().put(`/api/tasks/${task._id}`).set(auth(token)).send({
+      title: 'draft',
+      status: 'pending',
+      description: '',
+      dueDate: null,
+    })
+    expect(res.status).toBe(200)
+    expect(res.body.description).toBe('')
+    expect(res.body.dueDate).toBeNull()
+  })
+
+  it('keeps fields that are left out of an update', async () => {
+    const { body: task } = await createTask({ title: 'draft', description: 'some notes' })
+    const res = await api().put(`/api/tasks/${task._id}`).set(auth(token)).send({ status: 'completed' })
+    expect(res.body).toMatchObject({ description: 'some notes', status: 'completed' })
+  })
+
   it('validates updates too', async () => {
     const { body: task } = await createTask({ title: 'draft' })
     const res = await api().put(`/api/tasks/${task._id}`).set(auth(token)).send({ status: 'done' })
