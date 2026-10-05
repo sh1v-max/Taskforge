@@ -50,6 +50,9 @@ const apiLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
   legacyHeaders: false, // Disable `X-RateLimit-*` headers
+  // Turn the limiter off while tests run. Vitest sets the VITEST env variable,
+  // and the test suite fires far more than 100 requests in a few seconds.
+  skip: () => Boolean(process.env.VITEST),
 })
 
 // Apply rate limiting to all /api routes

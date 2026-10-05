@@ -8,7 +8,10 @@
 
 import express from 'express'
 import { register } from '../controllers/auth.controller.js'
-import { validate } from '../middleware/validate.js'
+// validateBody is the same middleware the task routes use (one validator for
+// the whole app); it reports errors as { field, message } and puts the
+// parsed, cleaned-up data on req.body
+import { validateBody } from '../middleware/validate.middleware.js'
 import { registerSchema } from '../schemas/auth.schema.js'
 import { login } from '../controllers/auth.controller.js'
 import { loginSchema } from '../schemas/auth.schema.js'
@@ -68,7 +71,7 @@ const router = express.Router()
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/register', validate(registerSchema), register)
+router.post('/register', validateBody(registerSchema), register)
 
 /**
  * @swagger
@@ -116,7 +119,7 @@ router.post('/register', validate(registerSchema), register)
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/login', validate(loginSchema), login)
+router.post('/login', validateBody(loginSchema), login)
 
 /**
  * @swagger
@@ -169,6 +172,6 @@ router.get('/me', protect, getMe)
  *       401:
  *         description: Unauthorized - missing or invalid token
  */
-router.put('/me', protect, validate(updateProfileSchema), updateMe)
+router.put('/me', protect, validateBody(updateProfileSchema), updateMe)
 
 export default router

@@ -211,12 +211,18 @@ export const tasksQuerySchema = z.object({
    *   - "createdAt:desc" → sort by creation date, newest first
    *   - "title:asc" → sort alphabetically
    */
+  //
+  // Allow-list (z.enum), not any string: the controller passes this value
+  // straight into Mongo's .sort(), so a plain string would let a client sort
+  // on ANY field, e.g. ?sortBy=user:asc or fields we never meant to expose.
+  // Only these 8 values pass; anything else → 400.
   sortBy: z
-    .string({
-      message: 'sortBy must be a string',
-    })
+    .enum(
+      ['createdAt:asc', 'createdAt:desc', 'dueDate:asc', 'dueDate:desc',
+        'title:asc', 'title:desc', 'status:asc', 'status:desc'],
+      { message: 'sortBy must be createdAt, dueDate, title or status, followed by :asc or :desc' },
+    )
     .optional(),
-  // Note: More detailed validation of sortBy format can be added in controllers
 
   // ============ PAGINATION: PAGE ============
   /**

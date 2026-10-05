@@ -101,11 +101,16 @@ export const getTasks = asyncHandler(async (req, res) => {
   // This is the security check - user can only see their own tasks
   const query = { user: req.user.id }
 
+  // Read everything from req.validatedQuery (set by validateQuery middleware),
+  // NOT req.query. req.query is the raw, unchecked input; validatedQuery has
+  // been checked by Zod: status is a real status, sortBy is on the allow-list,
+  // and page/limit are numbers with defaults (1 and 10) already filled in.
+  const { status, sortBy, page, limit } = req.validatedQuery
+
   // ============ APPLY FILTERING ============
   // If client sent ?status=pending, add it to the query
-  // req.query is already validated by validateQuery middleware
-  if (req.query.status) {
-    query.status = req.query.status
+  if (status) {
+    query.status = status
     // Now query is: { user: "...", status: "pending" }
   }
 
@@ -114,18 +119,17 @@ export const getTasks = asyncHandler(async (req, res) => {
 
   // ============ APPLY SORTING ============
   // Format: "field:direction" (e.g., "dueDate:asc" or "createdAt:desc")
-  if (req.query.sortBy) {
-    const [field, direction] = req.query.sortBy.split(':')
+  // Safe to put straight into .sort() because the schema only allows
+  // createdAt / dueDate / title / status (see tasksQuerySchema)
+  if (sortBy) {
+    const [field, direction] = sortBy.split(':')
     // Convert "asc" to 1, "desc" to -1
     const sortDirection = direction === 'desc' ? -1 : 1
     mongoQuery = mongoQuery.sort({ [field]: sortDirection })
   }
 
   // ============ APPLY PAGINATION ============
-  // Use validatedQuery for coerced numeric values, with fallback to req.query
-  const validatedQuery = req.validatedQuery || req.query
-  const page = validatedQuery.page || 1
-  const limit = validatedQuery.limit || 10
+  // page and limit come from validatedQuery above (already numbers, defaults applied)
   const skip = (page - 1) * limit
 
   mongoQuery = mongoQuery.skip(skip).limit(limit)

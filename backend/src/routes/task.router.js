@@ -144,6 +144,7 @@ router.post('/', validateBody(createTaskSchema), createTask)
  *         description: Sort field and direction (e.g., "dueDate:asc" or "createdAt:desc")
  *         schema:
  *           type: string
+ *           enum: [createdAt:asc, createdAt:desc, dueDate:asc, dueDate:desc, title:asc, title:desc, status:asc, status:desc]
  *           example: dueDate:asc
  *       - name: page
  *         in: query

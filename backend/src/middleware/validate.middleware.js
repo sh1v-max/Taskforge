@@ -24,6 +24,22 @@
  */
 
 /**
+ * Turn Zod's error into a list the frontend can show
+ *
+ * Zod 4 puts the problems on error.issues (Zod 3 called it error.errors).
+ * Reading .errors on Zod 4 gives undefined, which is why every error
+ * used to come back as field "unknown".
+ *
+ * Example output:
+ * [{ field: "title", message: "Title must be a string" }]
+ */
+const toErrors = (error) =>
+  error.issues.map((issue) => ({
+    field: issue.path.join('.') || 'body', // e.g., "status"; empty path = the whole body
+    message: issue.message, // e.g., "Status must be pending, in-progress, or completed"
+  }))
+
+/**
  * Validate Request Body
  *
  * Creates middleware that validates req.body using a Zod schema
@@ -47,23 +63,20 @@ export const validateBody = (schema) => {
 
     // If validation failed
     if (!result.success) {
-      // Format error messages for frontend
-      const errors = (result.error.errors || []).map((err) => ({
-        field: err.path.join('.') || 'unknown', // e.g., "status"
-        message: err.message || 'Validation error', // e.g., "Status must be pending, in-progress, or completed"
-      }))
-
       return res.status(400).json({
         status: 'error',
         message: 'Validation failed',
-        errors: errors.length > 0 ? errors : [{ field: 'unknown', message: result.error.message || 'Validation error' }],
+        errors: toErrors(result.error),
       })
     }
 
     // ✅ Validation passed!
-    // Store validated data in req.validatedData
-    // (Controllers can use either req.body or req.validatedData)
-    req.validatedData = result.data
+    // Replace req.body with Zod's parsed result, so controllers get the
+    // cleaned-up values: trimmed strings, defaults filled in (status: 'pending'),
+    // emails lowercased, and unknown fields dropped.
+    // (Before this, the parsed data went to req.validatedData, but controllers
+    // read req.body, so none of those transforms actually applied.)
+    req.body = result.data
 
     // Call next middleware/controller
     next()
@@ -100,15 +113,10 @@ export const validateQuery = (schema) => {
     const result = schema.safeParse(req.query)
 
     if (!result.success) {
-      const errors = (result.error.errors || []).map((err) => ({
-        field: err.path.join('.') || 'unknown',
-        message: err.message || 'Validation error',
-      }))
-
       return res.status(400).json({
         status: 'error',
         message: 'Invalid query parameters',
-        errors: errors.length > 0 ? errors : [{ field: 'unknown', message: result.error.message || 'Validation error' }],
+        errors: toErrors(result.error),
       })
     }
 
