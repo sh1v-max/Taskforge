@@ -14,10 +14,52 @@ import {
   tasksQuerySchema,
 } from '../schemas/task.schema.js'
 
+/**
+ * Task Router
+ *
+ * This file defines all task-related HTTP endpoints:
+ * - POST /api/tasks → createTask
+ * - GET /api/tasks → getTasks
+ * - GET /api/tasks/:id → getTaskById
+ * - PUT /api/tasks/:id → updateTask
+ * - DELETE /api/tasks/:id → deleteTask
+ *
+ * Router is like a mini Express app for organizing routes
+ * We mount it in app.js: app.use('/api/tasks', taskRouter)
+ *
+ * Express Request Flow:
+ * 1. Client sends: POST /api/tasks
+ * 2. Express routes to: app.use('/api/tasks', taskRouter)
+ * 3. Router matches: router.post('/', handler)
+ * 4. Executes middleware chain (if any)
+ * 5. Calls controller function: createTask(req, res)
+ */
+
 const router = express.Router()
-// Every task route requires a logged-in user
+
+// ============ AUTHENTICATION MIDDLEWARE ============
+/**
+ * Apply protect middleware to ALL routes in this router
+ *
+ * router.use(middleware) applies middleware to all routes
+ * If we applied it to individual routes:
+ * router.post('/', protect, createTask)  ← Repetitive
+ * router.get('/', protect, getTasks)
+ * router.get('/:id', protect, getTaskById)
+ *
+ * Instead, apply once to all:
+ * router.use(protect)  ← Cleaner, DRY principle
+ *
+ * What protect does:
+ * 1. Checks if Authorization header has a valid JWT token
+ * 2. If valid: Decodes token, sets req.user
+ * 3. If invalid: Returns 401 Unauthorized
+ *
+ * Result: Every route below requires authentication
+ */
 router.use(protect)
 
+// ============ CREATE TASK ============
 /**
  * @swagger
  * /api/tasks:
@@ -78,6 +120,8 @@ router.use(protect)
  *               $ref: '#/components/schemas/Error'
  */
 router.post('/', validateBody(createTaskSchema), createTask)
+
+// ============ GET ALL TASKS ============
 /**
  * @swagger
  * /api/tasks:
@@ -97,10 +141,9 @@ router.post('/', validateBody(createTaskSchema), createTask)
  *           enum: [pending, in-progress, completed]
  *       - name: sortBy
  *         in: query
- *         description: Sort field and direction
+ *         description: Sort field and direction (e.g., "dueDate:asc" or "createdAt:desc")
  *         schema:
  *           type: string
- *           enum: [createdAt:asc, createdAt:desc, dueDate:asc, dueDate:desc, title:asc, title:desc, status:asc, status:desc]
  *           example: dueDate:asc
  *       - name: page
  *         in: query
@@ -135,6 +178,8 @@ router.post('/', validateBody(createTaskSchema), createTask)
  *               $ref: '#/components/schemas/Error'
  */
 router.get('/', validateQuery(tasksQuerySchema), getTasks)
+
+// ============ GET SINGLE TASK ============
 /**
  * @swagger
  * /api/tasks/{id}:
@@ -186,6 +231,8 @@ router.get('/', validateQuery(tasksQuerySchema), getTasks)
  *               $ref: '#/components/schemas/Error'
  */
 router.get('/:id', getTaskById)
+
+// ============ UPDATE TASK ============
 /**
  * @swagger
  * /api/tasks/{id}:
@@ -257,6 +304,8 @@ router.get('/:id', getTaskById)
  *               $ref: '#/components/schemas/Error'
  */
 router.put('/:id', validateBody(updateTaskSchema), updateTask)
+
+// ============ DELETE TASK ============
 /**
  * @swagger
  * /api/tasks/{id}:
@@ -313,4 +362,18 @@ router.put('/:id', validateBody(updateTaskSchema), updateTask)
  */
 router.delete('/:id', deleteTask)
 
+// ============ EXPORT ROUTER ============
+/**
+ * Export the router so it can be mounted in app.js
+ *
+ * In app.js:
+ * import taskRouter from './routes/task.router.js'
+ * app.use('/api/tasks', taskRouter)
+ *
+ * This means:
+ * - router.post('/') becomes POST /api/tasks
+ * - router.get('/') becomes GET /api/tasks
+ * - router.get('/:id') becomes GET /api/tasks/:id
+ * etc.
+ */
 export default router

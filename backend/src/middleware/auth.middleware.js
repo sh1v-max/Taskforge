@@ -1,31 +1,52 @@
+// this middleware reads the JWT token from the request headers
+// verifies that the token is valid
+// decodes the user ID from the token
+// fetches the user from MongoDB
+// attaches the user object to the request (req.user)
+// calls next()
+// if token is invalid or not found, it returns a 401 error
+
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
 
-// Verifies the Bearer token and loads the user into req.user.
-// The user is re-read from the database so a deleted account's
-// still-valid token stops working.
 export const protect = async (req, res, next) => {
   try {
     let token
 
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    // check if authorization header exists and starts with "Bearer"
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer')
+    ) {
       token = req.headers.authorization.split(' ')[1]
     }
 
+    // check if token exists
     if (!token) {
-      return res.status(401).json({ message: 'Not authorized, no token' })
+      return res.status(401).json({
+        message: 'Not authorized, no token',
+      })
     }
 
+    // verify token and decode it
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
+
+    // get user from decoded token and exclude password
     const user = await User.findById(decoded.id).select('-password')
 
     if (!user) {
-      return res.status(401).json({ message: 'User not found' })
+      return res.status(401).json({
+        message: 'User not found',
+      })
     }
 
+    // add user to request object for use in other routes
     req.user = user
+
     next()
   } catch (error) {
-    return res.status(401).json({ message: 'Not authorized, token failed' })
+    return res.status(401).json({
+      message: 'Not authorized, token failed',
+    })
   }
 }
